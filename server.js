@@ -5,9 +5,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { connectDB } = require('./database/db');
-const moment = require('moment-timezone');
 
-const horaColombia = moment().tz('America/Bogota').format('HH:mm:ss');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -731,7 +729,6 @@ app.get('/api/mensaje-especial', (req, res) => {
   res.json({ 
     mensaje: mensajeAleatorio,
     emoji: "💖🎀📚🌟",
-    mensaje: horaColombia
   });
 });
 
