@@ -1,0 +1,424 @@
+/* public/css/style.css - VERSIÓN SIMPLIFICADA Y FUNCIONAL */
+:root {
+  --rosa-principal: #ff9eb5;
+  --rosa-claro: #ffd1dc;
+  --rosa-oscuro: #f48fb1;
+  --rosa-suave: #fce4ec;
+  --texto-oscuro: #880e4f;
+  --blanco: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #fce4ec 0%, #ffd1dc 100%);
+  font-family: 'Arial', sans-serif;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 25px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(244, 143, 177, 0.15);
+  border: 3px solid #ff9eb5;
+}
+
+.titulo-principal {
+  color: #880e4f;
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+
+.subtitulo {
+  color: #f48fb1;
+  font-size: 1.2em;
+  margin-bottom: 20px;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Tarjetas */
+.tarjeta {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(244, 143, 177, 0.1);
+  border: 2px solid #ff9eb5;
+}
+
+.tarjeta-ancha {
+  grid-column: 1 / -1;
+}
+
+/* Títulos de sección */
+.titulo-seccion {
+  color: #880e4f;
+  font-size: 1.4em;
+  margin-bottom: 20px;
+  text-align: center;
+  display: block;
+}
+
+/* Botones - ¡ESTO ES IMPORTANTE! */
+.btn {
+  background: linear-gradient(135deg, #ff9eb5, #f48fb1);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  margin: 10px 5px;
+  display: inline-block;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(244, 143, 177, 0.3);
+}
+
+.btn-pequeno {
+  padding: 8px 16px;
+  font-size: 0.9em;
+}
+
+/* Items de tareas */
+.item-tarea {
+  background: #fdf2f8;
+  margin: 15px 0;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 4px solid #ff9eb5;
+}
+
+.tarea-completada {
+  opacity: 0.6;
+  background: #f0f0f0;
+}
+
+/* Barras de progreso */
+.barra-progreso {
+  background: #ffd1dc;
+  border-radius: 10px;
+  height: 10px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.relleno-progreso {
+  background: linear-gradient(90deg, #ff9eb5, #f48fb1);
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+/* Recompensas */
+.item-recompensa {
+  background: #fff7ed;
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 12px;
+  border-left: 3px solid #f59e0b;
+}
+
+.recompensa-desbloqueada {
+  background: #f0fdf4;
+  border-left-color: #10b981;
+}
+
+/* Mensajes especiales */
+.mensaje-especial {
+  background: #fdf2f8;
+  padding: 20px;
+  border-radius: 15px;
+  text-align: center;
+  border: 2px dashed #ff9eb5;
+}
+
+/* Color de materias */
+.color-materia {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .titulo-principal {
+    font-size: 2em;
+  }
+}
+/* FORMULARIOS MY MELODY */
+.formulario-container {
+  background: var(--blanco);
+  border-radius: 20px;
+  padding: 25px;
+  margin: 20px 0;
+  box-shadow: var(--sombra-suave);
+  border: 2px solid var(--rosa-principal);
+}
+
+.form-grupo {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  color: var(--texto-oscuro);
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 1em;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid var(--rosa-claro);
+  border-radius: 12px;
+  font-size: 1em;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: var(--rosa-suave);
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--rosa-principal);
+  background: var(--blanco);
+  box-shadow: 0 0 0 3px rgba(255, 158, 181, 0.2);
+}
+
+.form-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-botones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.btn-secundario {
+  background: linear-gradient(135deg, var(--rosa-claro), var(--rosa-suave));
+  color: var(--texto-oscuro);
+}
+
+.btn-secundario:hover {
+  background: linear-gradient(135deg, var(--rosa-suave), var(--rosa-claro));
+}
+
+/* Modal para formularios */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-contenido {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--blanco);
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 3px solid var(--rosa-principal);
+}
+
+.cerrar-modal {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: var(--rosa-oscuro);
+  background: none;
+  border: none;
+}
+
+.cerrar-modal:hover {
+  color: var(--texto-oscuro);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Botones de acción rápida */
+.botones-accion {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.btn-accion {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-accion:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+}
+
+.btn-tarea { background: linear-gradient(135deg, #34d399, #10b981); }
+.btn-materia { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.btn-horario { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+
+/* Mejoras para las tarjetas existentes */
+.tarjeta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.tarjeta-titulo {
+  color: var(--texto-oscuro);
+  font-size: 1.6em;
+  margin: 0;
+}
+
+/* ESTILOS PARA MODALES - AGREGAR AL FINAL DE TU CSS */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal-contenido {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 3px solid #ff9eb5;
+}
+
+.cerrar-modal {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 1.5em;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #f48fb1;
+}
+
+.cerrar-modal:hover {
+  color: #880e4f;
+}
+
+/* Estilos para formularios */
+.form-grupo {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  color: #880e4f;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #ffd1dc;
+  border-radius: 12px;
+  font-size: 1em;
+  font-family: inherit;
+  background: #fce4ec;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: #ff9eb5;
+  background: white;
+}
+
+.form-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-botones {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+}
+
+.btn-secundario {
+  background: linear-gradient(135deg, #ffd1dc, #fce4ec);
+  color: #880e4f;
+}
