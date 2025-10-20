@@ -53,7 +53,7 @@ tareaSchema.pre('save', function(next) {
 });
 
 function calcularPuntos(prioridad, tipo) {
-    let puntosBase = (prioridad || 3) * 5;
+    let puntosBase = (prioridad || 3) * 2;
     let multiplicador = 1;
 
     switch(tipo) {

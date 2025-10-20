@@ -5,6 +5,14 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { connectDB } = require('./database/db');
+const horaColombia = new Date().toLocaleTimeString('es-CO', {
+  timeZone: 'America/Bogota',
+  hour12: false,  // si quieres formato 24h
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit'
+});
+
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -21,6 +29,7 @@ const tareasRoutes = require('./routes/tareas');
 const horariosRoutes = require('./routes/horarios');
 const materiasRoutes = require('./routes/materias');
 const progressRoutes = require('./routes/progreso');
+const { time, timeStamp } = require('console');
 
 // Usar rutas
 app.use('/api/tareas', tareasRoutes);
@@ -729,6 +738,7 @@ app.get('/api/mensaje-especial', (req, res) => {
   res.json({
     mensaje: mensajeAleatorio,
     emoji: "💖🎀📚🌟",
+    timeStamp: horaColombia,
   });
 });
 
