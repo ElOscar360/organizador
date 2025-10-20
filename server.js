@@ -738,7 +738,7 @@ app.get('/api/mensaje-especial', (req, res) => {
   res.json({
     mensaje: mensajeAleatorio,
     emoji: "💖🎀📚🌟",
-    timeStamp: horaColombia,
+    timestamp: new Date().toLocaleTimeString()
   });
 });
 
