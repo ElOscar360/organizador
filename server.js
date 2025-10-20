@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
             <!-- Header -->
             <div class="header">
                 <h1 class="titulo-principal">🎀 Organizador Universitario 💖</h1>
-                <p class="subtitulo">Hecho con amor para la estudiante más brillante 🌟</p>
+                <p class="subtitulo">Hecho con amor para la más juiciosa y estudiosa princesa 🌟</p>
                 <div id="progreso-info">Cargando progreso...</div>
             </div>
 
