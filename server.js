@@ -726,7 +726,7 @@ app.get('/api/mensaje-especial', (req, res) => {
   ];
   const mensajeAleatorio = mensajes[Math.floor(Math.random() * mensajes.length)];
   
-  res.json({ 
+  res.json({
     mensaje: mensajeAleatorio,
     emoji: "💖🎀📚🌟",
   });
