@@ -1,4 +1,4 @@
-// server.js - VERSIÓN SIN MODALES + MONGODB NATIVE
+// server.js - VERSIÓN CON MODALES
 require('dotenv').config();
 
 const express = require('express');
@@ -27,7 +27,7 @@ app.use('/api/horarios', horariosRoutes);
 app.use('/api/materias', materiasRoutes);
 app.use('/api/recompensas', recompensasRoutes);
 
-// Ruta principal MEJORADA - SIN MODALES
+// Ruta principal CON MODALES
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -38,32 +38,97 @@ app.get('/', (req, res) => {
         <title>🎀 Organizador Universitario My Melody 💖</title>
         <link rel="stylesheet" href="/css/style.css">
         <style>
-            .form-simple {
-                background: #fce4ec;
-                padding: 20px;
-                border-radius: 15px;
-                margin: 15px 0;
+            /* Estilos para modales */
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+            }
+            .modal-contenido {
+                background-color: #fef6ff;
+                margin: 5% auto;
+                padding: 25px;
+                border-radius: 20px;
+                width: 90%;
+                max-width: 500px;
+                border: 3px solid #ff9eb5;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            }
+            .cerrar-modal {
+                color: #880e4f;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                background: none;
+                border: none;
+            }
+            .cerrar-modal:hover {
+                color: #ec4899;
             }
             .form-grupo {
-                margin-bottom: 15px;
+                margin-bottom: 18px;
             }
             .form-label {
                 display: block;
-                margin-bottom: 5px;
+                margin-bottom: 6px;
                 color: #880e4f;
                 font-weight: bold;
             }
             .form-input, .form-select, .form-textarea {
                 width: 100%;
-                padding: 10px;
+                padding: 12px;
                 border: 2px solid #ff9eb5;
-                border-radius: 10px;
+                border-radius: 12px;
                 background: white;
+                font-size: 16px;
+                box-sizing: border-box;
+            }
+            .form-textarea {
+                min-height: 80px;
+                resize: vertical;
             }
             .form-botones {
                 display: flex;
-                gap: 10px;
-                margin-top: 20px;
+                gap: 12px;
+                margin-top: 25px;
+                justify-content: flex-end;
+            }
+            .btn {
+                background: #ec4899;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 12px;
+                cursor: pointer;
+                font-weight: bold;
+                transition: background 0.3s;
+            }
+            .btn:hover {
+                background: #db2777;
+            }
+            .btn-secundario {
+                background: #8b5cf6;
+            }
+            .btn-secundario:hover {
+                background: #7c3aed;
+            }
+            .btn-accion {
+                background: #10b981;
+                color: white;
+                border: none;
+                padding: 10px 16px;
+                border-radius: 10px;
+                cursor: pointer;
+                font-weight: bold;
+                display: flex;
+                align-items: center;
+                gap: 5px;
             }
         </style>
     </head>
@@ -82,48 +147,11 @@ app.get('/', (req, res) => {
                 <div class="tarjeta">
                     <div class="tarjeta-header">
                         <h2 class="tarjeta-titulo">📚 Mis Tareas</h2>
-                        <button class="btn" onclick="cargarTareas()">🔄 Actualizar Tareas</button>
+                        <button class="btn-accion" onclick="mostrarModal('modalTarea')">
+                            <span>➕</span> Nueva Tarea
+                        </button>
                     </div>
-                    
-                    <!-- Formulario simple para nueva tarea -->
-                    <div class="form-simple">
-                        <h3 style="color: #880e4f; margin-bottom: 15px;">➕ Nueva Tarea</h3>
-                        <form id="formTarea">
-                            <div class="form-grupo">
-                                <label class="form-label">Título *</label>
-                                <input type="text" class="form-input" name="titulo" required placeholder="Estudiar para el parcial...">
-                            </div>
-                            <div class="form-grupo">
-                                <label class="form-label">Descripción</label>
-                                <textarea class="form-textarea" name="descripcion" placeholder="Detalles..."></textarea>
-                            </div>
-                            <div class="form-grupo">
-                                <label class="form-label">Tipo</label>
-                                <select class="form-select" name="tipo">
-                                    <option value="tarea">📝 Tarea normal</option>
-                                    <option value="quiz">📋 Quiz</option>
-                                    <option value="parcial">📊 Parcial</option>
-                                    <option value="trabajo">📄 Trabajo</option>
-                                    <option value="proyecto">📚 Proyecto</option>
-                                </select>
-                            </div>
-                            <div class="form-grupo">
-                                <label class="form-label">Prioridad</label>
-                                <select class="form-select" name="prioridad">
-                                    <option value="1">⭐ Baja</option>
-                                    <option value="2">⭐⭐ Media-Baja</option>
-                                    <option value="3" selected>⭐⭐⭐ Media</option>
-                                    <option value="4">⭐⭐⭐⭐ Alta</option>
-                                    <option value="5">⭐⭐⭐⭐⭐ Urgente</option>
-                                </select>
-                            </div>
-                            <div class="form-botones">
-                                <button type="button" class="btn btn-secundario" onclick="document.getElementById('formTarea').reset()">🔄 Limpiar</button>
-                                <button type="button" class="btn" onclick="crearTarea()">💾 Guardar Tarea</button>
-                            </div>
-                        </form>
-                    </div>
-                    
+                    <button class="btn" onclick="cargarTareas()">🔄 Actualizar Tareas</button>
                     <div id="tareas-lista" style="margin-top: 20px;">Cargando tareas...</div>
                 </div>
 
@@ -131,53 +159,11 @@ app.get('/', (req, res) => {
                 <div class="tarjeta">
                     <div class="tarjeta-header">
                         <h2 class="tarjeta-titulo">🕐 Mi Horario</h2>
-                        <button class="btn" onclick="cargarHorario()">🔄 Actualizar Horario</button>
+                        <button class="btn-accion" onclick="mostrarModal('modalHorario')">
+                            <span>➕</span> Nueva Clase
+                        </button>
                     </div>
-                    
-                    <!-- Formulario simple para nueva clase -->
-                    <div class="form-simple">
-                        <h3 style="color: #880e4f; margin-bottom: 15px;">➕ Nueva Clase</h3>
-                        <form id="formHorario">
-                            <div class="form-grupo">
-                                <label class="form-label">Materia *</label>
-                                <input type="text" class="form-input" name="materia_nombre" required placeholder="Ej: Matemáticas">
-                            </div>
-                            <div class="form-grupo">
-                                <label class="form-label">Día *</label>
-                                <select class="form-select" name="dia" required>
-                                    <option value="Lunes">Lunes</option>
-                                    <option value="Martes">Martes</option>
-                                    <option value="Miércoles">Miércoles</option>
-                                    <option value="Jueves">Jueves</option>
-                                    <option value="Viernes">Viernes</option>
-                                    <option value="Sábado">Sábado</option>
-                                </select>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <div class="form-grupo">
-                                    <label class="form-label">Hora inicio *</label>
-                                    <input type="time" class="form-input" name="hora_inicio" required>
-                                </div>
-                                <div class="form-grupo">
-                                    <label class="form-label">Hora fin *</label>
-                                    <input type="time" class="form-input" name="hora_fin" required>
-                                </div>
-                            </div>
-                            <div class="form-grupo">
-                                <label class="form-label">Aula</label>
-                                <input type="text" class="form-input" name="aula" placeholder="Aula 201">
-                            </div>
-                            <div class="form-grupo">
-                                <label class="form-label">Profesor</label>
-                                <input type="text" class="form-input" name="profesor" placeholder="Nombre del profesor">
-                            </div>
-                            <div class="form-botones">
-                                <button type="button" class="btn btn-secundario" onclick="document.getElementById('formHorario').reset()">🔄 Limpiar</button>
-                                <button type="button" class="btn" onclick="crearHorario()">💾 Guardar Clase</button>
-                            </div>
-                        </form>
-                    </div>
-                    
+                    <button class="btn" onclick="cargarHorario()">🔄 Actualizar Horario</button>
                     <div id="horario-lista" style="margin-top: 20px;">Cargando horario...</div>
                 </div>
 
@@ -228,7 +214,124 @@ app.get('/', (req, res) => {
             </div>
         </div>
 
+        <!-- Modal para Nueva Tarea -->
+        <div id="modalTarea" class="modal">
+            <div class="modal-contenido">
+                <button class="cerrar-modal" onclick="cerrarModal('modalTarea')">×</button>
+                <h2 style="color: #880e4f; margin-bottom: 20px; text-align: center;">📝 Nueva Tarea</h2>
+                
+                <form id="formTarea">
+                    <div class="form-grupo">
+                        <label class="form-label">Título de la tarea *</label>
+                        <input type="text" class="form-input" name="titulo" required placeholder="Ej: Estudiar para el parcial de matemáticas">
+                    </div>
+                    
+                    <div class="form-grupo">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-textarea" name="descripcion" placeholder="Detalles de la tarea..."></textarea>
+                    </div>
+                    
+                    <div class="form-grupo">
+                        <label class="form-label">Tipo de tarea</label>
+                        <select class="form-select" name="tipo">
+                            <option value="tarea">📝 Tarea normal</option>
+                            <option value="quiz">📋 Quiz</option>
+                            <option value="parcial">📊 Parcial</option>
+                            <option value="trabajo">📄 Trabajo</option>
+                            <option value="proyecto">📚 Proyecto</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-grupo">
+                        <label class="form-label">Prioridad</label>
+                        <select class="form-select" name="prioridad">
+                            <option value="1">⭐ Baja</option>
+                            <option value="2">⭐⭐ Media-Baja</option>
+                            <option value="3" selected>⭐⭐⭐ Media</option>
+                            <option value="4">⭐⭐⭐⭐ Alta</option>
+                            <option value="5">⭐⭐⭐⭐⭐ Urgente</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-botones">
+                        <button type="button" class="btn btn-secundario" onclick="cerrarModal('modalTarea')">Cancelar</button>
+                        <button type="button" class="btn" onclick="crearTarea()">💾 Guardar Tarea</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal para Nueva Clase en Horario -->
+        <div id="modalHorario" class="modal">
+            <div class="modal-contenido">
+                <button class="cerrar-modal" onclick="cerrarModal('modalHorario')">×</button>
+                <h2 style="color: #880e4f; margin-bottom: 20px; text-align: center;">🕐 Nueva Clase</h2>
+                
+                <form id="formHorario">
+                    <div class="form-grupo">
+                        <label class="form-label">Nombre de la materia *</label>
+                        <input type="text" class="form-input" name="materia_nombre" required placeholder="Ej: Matemáticas">
+                    </div>
+                    
+                    <div class="form-grupo">
+                        <label class="form-label">Día de la semana *</label>
+                        <select class="form-select" name="dia" required>
+                            <option value="Lunes">Lunes</option>
+                            <option value="Martes">Martes</option>
+                            <option value="Miércoles">Miércoles</option>
+                            <option value="Jueves">Jueves</option>
+                            <option value="Viernes">Viernes</option>
+                            <option value="Sábado">Sábado</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-grupo">
+                            <label class="form-label">Hora inicio *</label>
+                            <input type="time" class="form-input" name="hora_inicio" required>
+                        </div>
+                        <div class="form-grupo">
+                            <label class="form-label">Hora fin *</label>
+                            <input type="time" class="form-input" name="hora_fin" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-grupo">
+                        <label class="form-label">Aula</label>
+                        <input type="text" class="form-input" name="aula" placeholder="Ej: Aula 201">
+                    </div>
+                    
+                    <div class="form-grupo">
+                        <label class="form-label">Profesor</label>
+                        <input type="text" class="form-input" name="profesor" placeholder="Nombre del profesor">
+                    </div>
+                    
+                    <div class="form-botones">
+                        <button type="button" class="btn btn-secundario" onclick="cerrarModal('modalHorario')">Cancelar</button>
+                        <button type="button" class="btn" onclick="crearHorario()">💾 Guardar Clase</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
+        // ========== FUNCIONES PARA MODALES ==========
+        
+        function mostrarModal(idModal) {
+            document.getElementById(idModal).style.display = 'block';
+        }
+
+        function cerrarModal(idModal) {
+            document.getElementById(idModal).style.display = 'none';
+        }
+
+        // Cerrar modal al hacer clic fuera del contenido
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
         // ========== FUNCIONES PRINCIPALES ==========
         
         // Crear nueva tarea
@@ -256,6 +359,7 @@ app.get('/', (req, res) => {
                 
                 if (data.success) {
                     alert('✅ Tarea creada exitosamente! Ganaste ' + data.puntos_ganados + ' puntos potenciales!');
+                    cerrarModal('modalTarea');
                     form.reset();
                     cargarTareas();
                     cargarProgreso();
@@ -296,6 +400,7 @@ app.get('/', (req, res) => {
                 
                 if (data.success) {
                     alert('✅ Clase agregada al horario!');
+                    cerrarModal('modalHorario');
                     form.reset();
                     cargarHorario();
                 } else {
