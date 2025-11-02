@@ -951,6 +951,30 @@ app.get('/api/recompensas', async (req, res) => {
     }
 });
 
+// Ruta de DEBUG para recompensas
+app.get('/api/debug-recompensas', async (req, res) => {
+    try {
+        const db = getDB();
+        console.log('🔍 Buscando recompensas en la base de datos...');
+        
+        const recompensas = await db.collection('recompensas').find({}).toArray();
+        console.log('📊 Recompensas encontradas:', recompensas.length);
+        
+        recompensas.forEach((r, i) => {
+            console.log(`🎁 Recompensa ${i + 1}:`, r.nombre, '- ID:', r._id);
+        });
+
+        res.json({
+            success: true,
+            count: recompensas.length,
+            recompensas: recompensas
+        });
+    } catch (error) {
+        console.error('❌ Error en debug:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Iniciar el servidor
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🎀 Servidor corriendo en: http://localhost:${PORT}`);
