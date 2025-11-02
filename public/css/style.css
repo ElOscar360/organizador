@@ -422,3 +422,137 @@ body {
   background: linear-gradient(135deg, #ffd1dc, #fce4ec);
   color: #880e4f;
 }
+
+/* Estilos para la tienda de recompensas */
+.btn-filtro {
+    background: #fce4ec;
+    border: 2px solid transparent;
+    color: #880e4f;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.btn-filtro:hover {
+    background: #f8bbd9;
+    transform: translateY(-2px);
+}
+
+.btn-filtro.active {
+    background: #ec4899;
+    color: white;
+    border-color: #ec4899;
+}
+
+.tarjeta-recompensa {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-left: 5px solid #ec4899;
+    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.tarjeta-recompensa:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.15);
+}
+
+.info-recompensa {
+    flex: 1;
+}
+
+.recompensa-titulo {
+    font-size: 1.2em;
+    color: #880e4f;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.recompensa-descripcion {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 8px;
+}
+
+.recompensa-puntos {
+    background: linear(45deg, #ec4899, #8b5cf6);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.recompensa-categoria {
+    background: #fce4ec;
+    color: #880e4f;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    margin-right: 8px;
+}
+
+.btn-canjear {
+    background: linear(45deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.btn-canjear:hover:not(:disabled) {
+    background: linear(45deg, #059669, #047857);
+    transform: scale(1.05);
+}
+
+.btn-canjear:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-canjear.canjeable-multiple {
+    background: linear(45deg, #8b5cf6, #7c3aed);
+}
+
+.btn-canjear.canjeable-multiple:hover:not(:disabled) {
+    background: linear(45deg, #7c3aed, #6d28d9);
+}
+
+.item-historial {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 3px solid #ec4899;
+}
+
+.estado-pendiente {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+}
+
+.estado-entregada {
+    background: #d1fae5;
+    color: #059669;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+}

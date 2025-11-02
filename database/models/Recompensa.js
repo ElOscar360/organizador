@@ -18,7 +18,7 @@ const recompensaSchema = new mongoose.Schema({
     },
     canjeable_multiple: {
         type: Boolean,
-        default: true  // Puede canjearse múltiples veces
+        default: true
     },
     activa: {
         type: Boolean,

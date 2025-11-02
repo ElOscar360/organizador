@@ -37,9 +37,4 @@ const recompensaCanjeadaSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Índices para búsquedas rápidas
-recompensaCanjeadaSchema.index({ usuario_id: 1, fecha_canje: -1 });
-recompensaCanjeadaSchema.index({ recompensa_id: 1 });
-recompensaCanjeadaSchema.index({ estado: 1 });
-
 module.exports = mongoose.model('RecompensaCanjeada', recompensaCanjeadaSchema);

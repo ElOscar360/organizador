@@ -85,16 +85,39 @@ app.get('/', (req, res) => {
                     <div id="horario-lista" style="margin-top: 20px;">Cargando horario...</div>
                     </div>
 
-                <!-- Sección de Recompensas -->
-                <div class="tarjeta tarjeta-ancha">
+                <!-- Sección de Recompensas - VERSIÓN MEJORADA -->
+                        <div class="tarjeta tarjeta-ancha">
                             <div class="tarjeta-header">
-                            <h2 class="tarjeta-titulo">🎁 Mis Recompensas</h2>
-                        <button class="btn-accion btn-materia" onclick="mostrarModal('modalMateria')">
-                                <span>➕</span> Nueva Materia
-                                </button>
+                                <h2 class="tarjeta-titulo">🎁 Tienda de Recompensas</h2>
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div style="background: #fce4ec; padding: 8px 15px; border-radius: 20px;">
+                                        <strong>💎 <span id="puntos-actuales">0</span> puntos disponibles</strong>
+                                    </div>
+                                    <button class="btn" onclick="cargarRecompensas()">🔄 Actualizar</button>
                                 </div>
-                                <button class="btn" onclick="cargarRecompensas()">🔄 Ver Recompensas</button>
-                                <div id="recompensas-lista" style="margin-top: 20px;">Cargando recompensas...</div>
+                            </div>
+
+                            <!-- Filtros de categorías -->
+                            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                                <button class="btn-filtro active" onclick="filtrarRecompensas('todas')">Todas</button>
+                                <button class="btn-filtro" onclick="filtrarRecompensas('digital')">📱 Digital</button>
+                                <button class="btn-filtro" onclick="filtrarRecompensas('comida')">🍕 Comida</button>
+                                <button class="btn-filtro" onclick="filtrarRecompensas('experiencia')">🎬 Experiencias</button>
+                                <button class="btn-filtro" onclick="filtrarRecompensas('especial')">💝 Especiales</button>
+                                <button class="btn-filtro" onclick="filtrarRecompensas('fisica')">📦 Físicas</button>
+                            </div>
+                        <div id="recompensas-lista" style="margin-top: 20px;">
+                            Cargando recompensas...
+                        </div>
+
+                      <!-- Historial de canjes -->
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #fce4ec;">
+                            <h3 style="color: #880e4f; margin-bottom: 15px;">📜 Mis Canjes Recientes</h3>
+                            <button class="btn btn-secundario" onclick="cargarHistorialCanjes()">🔄 Ver Historial</button>
+                            <div id="historial-canjes" style="margin-top: 15px;">
+                                <!-- Aquí se cargará el historial -->
+                            </div>
+                        </div>
                     </div>
 
                 <!-- Sección de Mensajes Especiales -->
@@ -472,6 +495,179 @@ app.get('/', (req, res) => {
         }
 
         // ========== FIN DE NUEVAS FUNCIONES ==========
+                        // ========== SISTEMA DE RECOMPENSAS MEJORADO ==========
+
+                let recompensasGlobales = [];
+                let puntosActuales = 0;
+
+                // Cargar recompensas y puntos
+                async function cargarRecompensas() {
+                    try {
+                        const [responseRecompensas, responseProgreso] = await Promise.all([
+                            fetch('/api/recompensas'),
+                            fetch('/api/progreso')
+                        ]);
+
+                        const dataRecompensas = await responseRecompensas.json();
+                        const dataProgreso = await responseProgreso.json();
+
+                        if (dataRecompensas.success && dataProgreso.success) {
+                            recompensasGlobales = dataRecompensas.recompensas;
+                            puntosActuales = dataProgreso.progreso.puntos_totales - dataProgreso.progreso.puntos_gastados;
+                            
+                            // Actualizar puntos en la UI
+                            document.getElementById('puntos-actuales').textContent = puntosActuales;
+                            
+                            // Mostrar todas las recompensas
+                            mostrarRecompensas(recompensasGlobales);
+                        }
+                    } catch (error) {
+                        console.error('Error cargando recompensas:', error);
+                    }
+                }
+
+                // Mostrar recompensas en la UI
+                function mostrarRecompensas(recompensas) {
+                    if (recompensas.length === 0) {
+                        document.getElementById('recompensas-lista').innerHTML = 
+                            '<div style="text-align: center; padding: 40px; color: #880e4f;">' +
+                                '<div style="font-size: 3em; margin-bottom: 10px;">🎁</div>' +
+                                '<h3>No hay recompensas disponibles</h3>' +
+                                '<p>¡Vuelve más tarde!</p>' +
+                            '</div>';
+                        return;
+                    }
+
+                    const recompensasHTML = recompensas.map(recompensa => {
+                        const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
+                        const claseBoton = recompensa.canjeable_multiple ? 'btn-canjear canjeable-multiple' : 'btn-canjear';
+                        
+                        return '<div class="tarjeta-recompensa" data-categoria="' + recompensa.categoria + '">' +
+                                    '<div class="info-recompensa">' +
+                                        '<div class="recompensa-titulo">' +
+                                            '<span>' + recompensa.imagen + '</span>' +
+                                            '<strong>' + recompensa.nombre + '</strong>' +
+                                            '<span class="recompensa-categoria">' + obtenerNombreCategoria(recompensa.categoria) + '</span>' +
+                                        '</div>' +
+                                        '<div class="recompensa-descripcion">' + recompensa.descripcion + '</div>' +
+                                        '<div style="display: flex; gap: 10px; align-items: center;">' +
+                                            '<span class="recompensa-puntos">💎 ' + recompensa.puntos_requeridos + ' puntos</span>' +
+                                            (recompensa.canjeable_multiple ? '<span style="color: #8b5cf6; font-size: 0.8em;">🔄 Múltiple</span>' : '') +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<button class="' + claseBoton + '" ' +
+                                            'onclick="canjearRecompensa(\'' + recompensa.id + '\', ' + recompensa.puntos_requeridos + ')"' +
+                                            (!puedeCanjear ? ' disabled' : '') + '>' +
+                                        (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
+                                    '</button>' +
+                                '</div>';
+                    }).join('');
+
+                    document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
+                }
+
+                // Filtrar recompensas por categoría
+                function filtrarRecompensas(categoria) {
+                    // Actualizar botones activos
+                    document.querySelectorAll('.btn-filtro').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    event.target.classList.add('active');
+
+                    const recompensasFiltradas = categoria === 'todas' 
+                        ? recompensasGlobales 
+                        : recompensasGlobales.filter(r => r.categoria === categoria);
+                    
+                    mostrarRecompensas(recompensasFiltradas);
+                }
+
+                // Canjear una recompensa
+                async function canjearRecompensa(recompensaId, puntosRequeridos) {
+                    if (!confirm('¿Estás segura de que quieres canjear esta recompensa por ' + puntosRequeridos + ' puntos?')) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/recompensas/' + recompensaId + '/canjear', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            alert('🎉 ¡Recompensa canjeada! Has gastado ' + puntosRequeridos + ' puntos\n💎 Puntos restantes: ' + data.puntos_restantes);
+                            
+                            // Recargar todo
+                            cargarRecompensas();
+                            cargarProgreso();
+                            cargarHistorialCanjes();
+                        } else {
+                            alert('❌ Error: ' + data.error);
+                        }
+                    } catch (error) {
+                        console.error('Error canjeando recompensa:', error);
+                        alert('❌ Error al canjear la recompensa');
+                    }
+                }
+
+                // Cargar historial de canjes
+                async function cargarHistorialCanjes() {
+                    try {
+                        const response = await fetch('/api/recompensas/historial');
+                        const data = await response.json();
+
+                        if (data.success) {
+                            mostrarHistorialCanjes(data.historial);
+                        }
+                    } catch (error) {
+                        console.error('Error cargando historial:', error);
+                    }
+                }
+
+                // Mostrar historial de canjes
+                function mostrarHistorialCanjes(historial) {
+                    if (historial.length === 0) {
+                        document.getElementById('historial-canjes').innerHTML = 
+                            '<div style="text-align: center; padding: 20px; color: #666;">' +
+                                '<p>No hay canjes recientes</p>' +
+                            '</div>';
+                        return;
+                    }
+
+                    const historialHTML = historial.map(canje => {
+                        return '<div class="item-historial">' +
+                                    '<div style="display: flex; justify-content: between; align-items: center;">' +
+                                        '<div style="flex: 1;">' +
+                                            '<strong>' + canje.recompensa + '</strong>' +
+                                            '<div style="color: #666; font-size: 0.9em;">' +
+                                                '💎 ' + canje.puntos + ' puntos • ' + new Date(canje.fecha).toLocaleDateString() +
+                                            '</div>' +
+                                        '</div>' +
+                                        '<span class="estado-' + canje.estado + '">' + canje.estado + '</span>' +
+                                    '</div>' +
+                                '</div>';
+                    }).join('');
+
+                    document.getElementById('historial-canjes').innerHTML = historialHTML;
+                }
+
+                // Helper para nombres de categorías
+                function obtenerNombreCategoria(categoria) {
+                    const categorias = {
+                        'digital': 'Digital',
+                        'comida': 'Comida',
+                        'experiencia': 'Experiencia',
+                        'especial': 'Especial',
+                        'fisica': 'Física'
+                    };
+                    return categorias[categoria] || categoria;
+                }
+
+                // ========== FIN SISTEMA DE RECOMPENSAS ==========
+        
         
         // Funciones globales simples para los botones
         async function cargarTareas() {
@@ -489,16 +685,6 @@ app.get('/', (req, res) => {
                 const response = await fetch('/api/horarios');
                 const data = await response.json();
                 mostrarHorario(data.horarios);
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
-
-        async function cargarRecompensas() {
-            try {
-                const response = await fetch('/api/progreso');
-                const data = await response.json();
-                mostrarRecompensas(data.progreso, data.recompensas);
             } catch (error) {
                 console.error('Error:', error);
             }
