@@ -151,7 +151,7 @@ app.get('/', (req, res) => {
               
               <div class="form-grupo">
                 <label class="form-label">Materia</label>
-                <select class="form-select" name="materia_id" id="selectMaterias">
+                <select class="form-select" name="materi.id" id="selectMaterias">
                   <option value="">Seleccionar materia...</option>
                 </select>
               </div>
@@ -231,7 +231,7 @@ app.get('/', (req, res) => {
             <form id="formHorario" onsubmit="crearHorario(event)">
               <div class="form-grupo">
                 <label class="form-label">Materia *</label>
-                <select class="form-select" name="materia_id" id="selectMateriasHorario" required>
+                <select class="form-select" name="materi.id" id="selectMateriasHorario" required>
                   <option value="">Seleccionar materia...</option>
                 </select>
               </div>
@@ -317,9 +317,9 @@ app.get('/', (req, res) => {
               selectTarea.innerHTML = '<option value="">Seleccionar materia...</option>';
               selectHorario.innerHTML = '<option value="">Seleccionar materia...</option>';
 
-              // Agregar materias - CORREGIDO PARA MONGODB (_id)
+              // Agregar materias - CORREGIDO PARA MONGODB .id)
               data.materias.forEach(function(materia) {
-                const optionHTML = '<option value="' + materia._id + '">' + materia.nombre + '</option>';
+                const optionHTML = '<option value="' + materia.id + '">' + materia.nombre + '</option>';
                 selectTarea.innerHTML += optionHTML;
                 selectHorario.innerHTML += optionHTML;
               });
@@ -337,7 +337,7 @@ app.get('/', (req, res) => {
             titulo: formData.get('titulo'),
             descripcion: formData.get('descripcion'),
             tipo: formData.get('tipo'),
-            materia_id: formData.get('materia_id') || null,
+            materi.id: formData.get('materi.id') || null,
             fecha_entrega: formData.get('fecha_entrega'),
             prioridad: parseInt(formData.get('prioridad'))
           };
@@ -409,7 +409,7 @@ app.get('/', (req, res) => {
           event.preventDefault();
           const formData = new FormData(event.target);
           const horarioData = {
-            materia_id: formData.get('materia_id'),
+            materi.id: formData.get('materi.id'),
             dia: formData.get('dia'),
             hora_inicio: formData.get('hora_inicio'),
             hora_fin: formData.get('hora_fin'),
@@ -556,7 +556,7 @@ app.get('/', (req, res) => {
                                 '</div>' +
                             '</div>' +
                             '<button class="' + claseBoton + '" ' +
-                                    'onclick="canjearRecompensa(\\'' + recompensa._id + '\\', ' + recompensa.puntos_requeridos + ')"' +
+                                    'onclick="canjearRecompensa(\\'' + recompensa.id + '\\', ' + recompensa.puntos_requeridos + ')"' +
                                     (!puedeCanjear ? ' disabled' : '') + '>' +
                                 (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
                             '</button>' +
@@ -769,7 +769,7 @@ app.get('/', (req, res) => {
           }
 
           const tareasHTML = tareas.map(tarea => {
-            const tareaId = tarea._id;
+            const tareaId = tarea.id;
             const fechaEntrega = tarea.fecha_entrega ? new Date(tarea.fecha_entrega).toLocaleDateString() : '';
             
             return \`
@@ -828,7 +828,7 @@ app.get('/', (req, res) => {
           }
 
           const horarioHTML = horarios.map(horario => {
-            const horarioId = horario._id;
+            const horarioId = horario.id;
             
             return \`
             <div class="item-tarea">
