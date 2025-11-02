@@ -539,30 +539,19 @@ window.onclick = function(event) {
         let puntosActuales = 0;
 
         async function cargarRecompensas() {
-    try {
-        console.log('🔄 [1] Iniciando carga de recompensas...');
-        
-        const response = await fetch('/api/recompensas');
-        console.log('📨 [2] Respuesta HTTP:', response.status, response.ok);
-        
-        const data = await response.json();
-        console.log('📦 [3] Datos recibidos:', data);
-        
-        if (data.success) {
-            recompensasGlobales = data.recompensas;
-            console.log('✅ [4] Recompensas cargadas en variable:', recompensasGlobales);
-            console.log('📝 [5] Cantidad:', recompensasGlobales.length);
-            
-            await actualizarPuntos();
-            console.log('🎨 [6] Llamando a mostrarRecompensas...');
-            mostrarRecompensas(recompensasGlobales);
-        } else {
-            console.error('❌ [ERROR] Error en la respuesta:', data.error);
+            try {
+                const response = await fetch('/api/recompensas');
+                const data = await response.json();
+
+                if (data.success) {
+                    recompensasGlobales = data.recompensas;
+                    await actualizarPuntos();
+                    mostrarRecompensas(recompensasGlobales);
+                }
+            } catch (error) {
+                console.error('Error cargando recompensas:', error);
+            }
         }
-    } catch (error) {
-        console.error('💥 [ERROR] Error cargando recompensas:', error);
-    }
-}
 
         async function actualizarPuntos() {
             try {
@@ -579,12 +568,8 @@ window.onclick = function(event) {
         }
 
         function mostrarRecompensas(recompensas) {
-    console.log('🎨 [7] MostrarRecompensas llamado con:', recompensas);
-    console.log('📊 [8] Tipo de datos:', typeof recompensas);
-    console.log('🔢 [9] Cantidad recibida:', recompensas ? recompensas.length : 'null');
-    
+      console.log('Mostrando recompensas:', recompensas);
     if (!recompensas || recompensas.length === 0) {
-        console.log('❌ [10] No hay recompensas o array vacío');
         document.getElementById('recompensas-lista').innerHTML = 
             '<div style="text-align: center; padding: 40px; color: #880e4f;">' +
                 '<div style="font-size: 3em; margin-bottom: 10px;">🎁</div>' +
@@ -594,10 +579,7 @@ window.onclick = function(event) {
         return;
     }
 
-    console.log('🎯 [11] Generando HTML para recompensas...');
-    
-    const recompensasHTML = recompensas.map((recompensa, index) => {
-        console.log('📝 [12] Procesando recompensa ${index}:', recompensa.nombre);
+    const recompensasHTML = recompensas.map(recompensa => {
         const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
         
         return '<div class="tarjeta-recompensa">' +
@@ -624,9 +606,7 @@ window.onclick = function(event) {
                 '</div>';
     }).join('');
 
-    console.log('🎉 [13] HTML generado, insertando en DOM...');
     document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
-    console.log('✅ [14] Recompensas mostradas en pantalla');
 }
 
         function filtrarRecompensas(categoria) {
@@ -948,51 +928,6 @@ app.get('/api/progreso', async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
-});
-
-// API de recompensas
-app.get('/api/recompensas', async (req, res) => {
-    try {
-        console.log('🔍 [SERVER] Buscando recompensas en MongoDB...');
-        const db = getDB();
-        
-        const recompensas = await db.collection('recompensas').find({}).toArray();
-        console.log('📊 [SERVER] Recompensas encontradas:', recompensas.length);
-        
-        res.json({
-            success: true,
-            recompensas: recompensas
-        });
-        
-        console.log('✅ [SERVER] Recompensas enviadas al frontend');
-    } catch (error) {
-        console.error('❌ [SERVER] Error en /api/recompensas:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Ruta de DEBUG para recompensas
-app.get('/api/debug-recompensas', async (req, res) => {
-    try {
-        const db = getDB();
-        console.log('🔍 Buscando recompensas en la base de datos...');
-        
-        const recompensas = await db.collection('recompensas').find({}).toArray();
-        console.log('📊 Recompensas encontradas:', recompensas.length);
-        
-        recompensas.forEach((r, i) => {
-            console.log(`🎁 Recompensa ${i + 1}:`, r.nombre, '- ID:', r._id);
-        });
-
-        res.json({
-            success: true,
-            count: recompensas.length,
-            recompensas: recompensas
-        });
-    } catch (error) {
-        console.error('❌ Error en debug:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
 });
 
 // Iniciar el servidor
