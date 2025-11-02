@@ -16,10 +16,6 @@ const recompensaSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
-    desbloqueada: {
-        type: Boolean,
-        default: true  // Ahora todas están desbloqueadas por defecto
-    },
     canjeable_multiple: {
         type: Boolean,
         default: true  // Puede canjearse múltiples veces
@@ -65,10 +61,9 @@ const recompensaSchema = new mongoose.Schema({
 
 // Método para verificar si puede canjearse
 recompensaSchema.methods.puedeCanjearse = function() {
-    return this.activa && 
-           (this.stock_ilimitado || this.stock_actual > 0) &&
-           this.desbloqueada;
-};
+    return this.activa &&
+           (this.stock_ilimitado || this.stock_actual > 0);
+}
 
 // Método para canjear (reducir stock)
 recompensaSchema.methods.canjear = async function() {

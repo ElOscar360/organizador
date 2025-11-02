@@ -29,6 +29,7 @@ const tareasRoutes = require('./routes/tareas');
 const horariosRoutes = require('./routes/horarios');
 const materiasRoutes = require('./routes/materias');
 const progressRoutes = require('./routes/progreso');
+const recompensasRoutes = require('./routes/recompensas');
 const { time, timeStamp } = require('console');
 
 // Usar rutas
@@ -36,6 +37,7 @@ app.use('/api/tareas', tareasRoutes);
 app.use('/api/horarios', horariosRoutes);
 app.use('/api/materias', materiasRoutes);
 app.use('/api/progreso', progressRoutes);
+app.use('/api/recompensas', recompensasRoutes);
 
 // Ruta principal MEJORADA
 app.get('/', (req, res) => {
