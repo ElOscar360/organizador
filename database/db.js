@@ -1,7 +1,7 @@
 // database/db.js - VERSIÓN CON LOGS
 require('dotenv').config();
 
-const mongoose = require('mongodb');
+const mongoose = require('mongoose');
 
 console.log('🔍 Verificando MONGODB_URI...');
 console.log('URI definida:', process.env.MONGODB_URI ? '✅ SÍ' : '❌ NO');
