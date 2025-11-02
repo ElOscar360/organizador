@@ -539,19 +539,30 @@ window.onclick = function(event) {
         let puntosActuales = 0;
 
         async function cargarRecompensas() {
-            try {
-                const response = await fetch('/api/recompensas');
-                const data = await response.json();
-
-                if (data.success) {
-                    recompensasGlobales = data.recompensas;
-                    await actualizarPuntos();
-                    mostrarRecompensas(recompensasGlobales);
-                }
-            } catch (error) {
-                console.error('Error cargando recompensas:', error);
-            }
+    try {
+        console.log('🔄 [1] Iniciando carga de recompensas...');
+        
+        const response = await fetch('/api/recompensas');
+        console.log('📨 [2] Respuesta HTTP:', response.status, response.ok);
+        
+        const data = await response.json();
+        console.log('📦 [3] Datos recibidos:', data);
+        
+        if (data.success) {
+            recompensasGlobales = data.recompensas;
+            console.log('✅ [4] Recompensas cargadas en variable:', recompensasGlobales);
+            console.log('📝 [5] Cantidad:', recompensasGlobales.length);
+            
+            await actualizarPuntos();
+            console.log('🎨 [6] Llamando a mostrarRecompensas...');
+            mostrarRecompensas(recompensasGlobales);
+        } else {
+            console.error('❌ [ERROR] Error en la respuesta:', data.error);
         }
+    } catch (error) {
+        console.error('💥 [ERROR] Error cargando recompensas:', error);
+    }
+}
 
         async function actualizarPuntos() {
             try {
@@ -568,9 +579,12 @@ window.onclick = function(event) {
         }
 
         function mostrarRecompensas(recompensas) {
-    console.log('Mostrando recompensas:', recompensas);
+    console.log('🎨 [7] MostrarRecompensas llamado con:', recompensas);
+    console.log('📊 [8] Tipo de datos:', typeof recompensas);
+    console.log('🔢 [9] Cantidad recibida:', recompensas ? recompensas.length : 'null');
     
     if (!recompensas || recompensas.length === 0) {
+        console.log('❌ [10] No hay recompensas o array vacío');
         document.getElementById('recompensas-lista').innerHTML = 
             '<div style="text-align: center; padding: 40px; color: #880e4f;">' +
                 '<div style="font-size: 3em; margin-bottom: 10px;">🎁</div>' +
@@ -580,11 +594,12 @@ window.onclick = function(event) {
         return;
     }
 
-    const recompensasHTML = recompensas.map(recompensa => {
+    console.log('🎯 [11] Generando HTML para recompensas...');
+    
+    const recompensasHTML = recompensas.map((recompensa, index) => {
+        console.log('📝 [12] Procesando recompensa ${index}:', recompensa.nombre);
         const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
-        const recompensaId = recompensa._id ? recompensa._id.toString() : '';
         
-        // CORRECCIÓN: Usar comillas simples correctamente
         return '<div class="tarjeta-recompensa">' +
                     '<div class="info-recompensa">' +
                         '<div class="recompensa-titulo">' +
@@ -602,14 +617,16 @@ window.onclick = function(event) {
                         '</div>' +
                     '</div>' +
                     '<button class="btn-canjear" ' +
-                            'onclick="canjearRecompensa(\\'' + recompensaId + '\\', ' + recompensa.puntos_requeridos + ')" ' +
+                            'onclick="canjearRecompensa(\'' + recompensa._id + '\', ' + recompensa.puntos_requeridos + ')" ' +
                             (puedeCanjear ? '' : 'disabled') + '>' +
                         (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
                     '</button>' +
                 '</div>';
     }).join('');
 
+    console.log('🎉 [13] HTML generado, insertando en DOM...');
     document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
+    console.log('✅ [14] Recompensas mostradas en pantalla');
 }
 
         function filtrarRecompensas(categoria) {
