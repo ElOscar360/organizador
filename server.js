@@ -422,36 +422,33 @@ app.get('/', (req, res) => {
         let puntosActuales = 0;
 
         // Cargar recompensas y puntos
-        async function cargarRecompensas() {
-            console.log('🎁 Iniciando carga de recompensas...');
-            try {
-                const responseRecompensas = await fetch('/api/recompensas');
-                const responseProgreso = await fetch('/api/progreso');
-
-                const dataRecompensas = await responseRecompensas.json();
-                const dataProgreso = await responseProgreso.json();
-
-                console.log('Datos recompensas:', dataRecompensas);
-                console.log('Datos progreso:', dataProgreso);
-
-                if (dataRecompensas.success && dataProgreso.success) {
-                    recompensasGlobales = dataRecompensas.recompensas;
-                    puntosActuales = dataProgreso.progreso.puntos_totales - dataProgreso.progreso.puntos_gastados;
-                    
-                    // Actualizar puntos en la UI
-                    document.getElementById('puntos-actuales').textContent = puntosActuales;
-                    
-                    // Mostrar todas las recompensas
-                    mostrarRecompensas(recompensasGlobales);
-                }
-            } catch (error) {
-                console.error('Error cargando recompensas:', error);
-                document.getElementById('recompensas-lista').innerHTML = 
-                    '<div style="color: red; padding: 20px; text-align: center;">' +
-                    '❌ Error cargando recompensas: ' + error.message +
-                    '</div>';
-            }
-        }
+                      async function cargarRecompensas() {
+                  console.log('🎁 EJECUTANDO cargarRecompensas...');
+                  
+                  try {
+                      const response = await fetch('/api/recompensas');
+                      console.log('✅ Response status:', response.status);
+                      
+                      const data = await response.json();
+                      console.log('✅ Datos recibidos:', data);
+                      
+                      // Mostrar algo SIMPLE para probar
+                      document.getElementById('recompensas-lista').innerHTML = 
+                          '<div style="background: #10b981; color: white; padding: 20px; border-radius: 10px; text-align: center;">' +
+                          '<h3>🎉 ¡RECOMPENSAS CARGADAS!</h3>' +
+                          '<p>Se encontraron ' + data.recompensas.length + ' recompensas</p>' +
+                          '<p>Primera: ' + data.recompensas[0].nombre + '</p>' +
+                          '</div>';
+                          
+                  } catch (error) {
+                      console.error('❌ Error:', error);
+                      document.getElementById('recompensas-lista').innerHTML = 
+                          '<div style="background: #ef4444; color: white; padding: 20px; border-radius: 10px; text-align: center;">' +
+                          '<h3>❌ ERROR</h3>' +
+                          '<p>' + error.message + '</p>' +
+                          '</div>';
+                  }
+              }
 
         // Mostrar recompensas en la UI
         function mostrarRecompensas(recompensas) {
@@ -663,8 +660,21 @@ app.get('/api/debug-completo', async (req, res) => {
         });
     }
 });
-// Iniciar el servidor
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🎀 Servidor corriendo en: http://localhost:${PORT}`);
-  console.log(`🚀 Listo para producción en Render.com`);
+// Cargar todo al iniciar - VERSIÓN CON LOGS
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOMContentLoaded - Iniciando aplicación...');
+    
+    // Verificar que los elementos existen
+    console.log('🔍 Elementos encontrados:');
+    console.log('- progreso-info:', document.getElementById('progreso-info'));
+    console.log('- tareas-lista:', document.getElementById('tareas-lista'));
+    console.log('- horario-lista:', document.getElementById('horario-lista'));
+    console.log('- recompensas-lista:', document.getElementById('recompensas-lista'));
+    console.log('- puntos-actuales:', document.getElementById('puntos-actuales'));
+    
+    // Ejecutar funciones
+    cargarProgreso();
+    cargarTareas();
+    cargarHorario();
+    cargarRecompensas();
 });
