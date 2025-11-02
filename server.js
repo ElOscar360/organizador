@@ -399,19 +399,19 @@ app.get('/', (req, res) => {
         // ========== FUNCIONES PARA MODALES ==========
         
         function mostrarModal(idModal) {
-    document.getElementById(idModal).style.display = 'block';
-}
+            document.getElementById(idModal).style.display = 'block';
+        }
 
-function cerrarModal(idModal) {
-    document.getElementById(idModal).style.display = 'none';
-}
+        function cerrarModal(idModal) {
+            document.getElementById(idModal).style.display = 'none';
+        }
 
-// Cerrar modal al hacer clic fuera del contenido
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.style.display = 'none';
-    }
-}
+        // Cerrar modal al hacer clic fuera del contenido
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
 
         // ========== FUNCIONES PRINCIPALES ==========
         
@@ -568,7 +568,7 @@ window.onclick = function(event) {
         }
 
         function mostrarRecompensas(recompensas) {
-      console.log('Mostrando recompensas:', recompensas);
+    console.log('Mostrando recompensas:', recompensas);
     if (!recompensas || recompensas.length === 0) {
         document.getElementById('recompensas-lista').innerHTML = 
             '<div style="text-align: center; padding: 40px; color: #880e4f;">' +
