@@ -1,5 +1,4 @@
-cat > server.js << 'EOF'
-// server.js - VERSIÓN COMPLETA Y CORREGIDA
+// server.js - VERSIÓN COMPLETA Y CORREGIDA PARA RENDER
 require('dotenv').config();
 
 const express = require('express');
@@ -592,9 +591,6 @@ app.get('/', (req, res) => {
 
         // ========== FIN SISTEMA DE RECOMPENSAS ==========
 
-        // Las demás funciones existentes (tareas, horarios, etc.) se mantienen igual
-        // [TODAS TUS FUNCIONES EXISTENTES AQUÍ - NO LAS BORRES]
-
         // Cargar todo al iniciar
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Iniciando aplicación...');
@@ -637,4 +633,3 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🎀 Servidor corriendo en: http://localhost:${PORT}`);
   console.log(`🚀 Listo para producción en Render.com`);
 });
-EOF
