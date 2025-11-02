@@ -628,23 +628,37 @@ app.get('/api/mensaje-especial', (req, res) => {
   });
   
 });
-app.get('/api/debug-db', async (req, res) => {
+// Ruta de diagnóstico completo
+app.get('/api/debug-completo', async (req, res) => {
     try {
         const Recompensa = require('./database/models/Recompensa');
         const Progreso = require('./database/models/Progreso');
+        const Tarea = require('./database/models/Tarea');
+        const Horario = require('./database/models/Horario');
         
         const recompensasCount = await Recompensa.countDocuments();
         const progreso = await Progreso.findOne();
+        const tareasCount = await Tarea.countDocuments();
+        const horariosCount = await Horario.countDocuments();
         
         res.json({
-            conexion: '✅ Conectado a MongoDB',
-            recompensas_en_bd: recompensasCount,
-            progreso: progreso,
-            mongodb_uri: process.env.MONGODB_URI ? '✅ Configurada' : '❌ No configurada'
+            estado: '✅ Todo funciona correctamente',
+            base_datos: {
+                recompensas: recompensasCount,
+                tareas: tareasCount,
+                horarios: horariosCount,
+                progreso: progreso
+            },
+            rutas: {
+                recompensas: '/api/recompensas',
+                progreso: '/api/progreso',
+                tareas: '/api/tareas',
+                horarios: '/api/horarios'
+            }
         });
     } catch (error) {
         res.json({ 
-            conexion: '❌ Error de conexión',
+            estado: '❌ Error',
             error: error.message
         });
     }
