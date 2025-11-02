@@ -1,33 +1,31 @@
-// database/db.js - VERSIÓN CON LOGS
-require('dotenv').config();
+// database/db.js
+const { MongoClient } = require('mongodb');
 
-const mongoose = require('mongoose');
+let db = null;
 
-console.log('🔍 Verificando MONGODB_URI...');
-console.log('URI definida:', process.env.MONGODB_URI ? '✅ SÍ' : '❌ NO');
+async function connectDB() {
+  try {
+    const client = new MongoClient(process.env.MONGODB_URI);
+    await client.connect();
+    db = client.db('organizador_universitario');
+    console.log('✅ Conectado a MongoDB');
+    
+    // Crear índices
+    await db.collection('tareas').createIndex({ materia_id: 1 });
+    await db.collection('horarios').createIndex({ materia_id: 1 });
+    await db.collection('recompensas_canjeadas').createIndex({ fecha: -1 });
+    
+    return db;
+  } catch (error) {
+    console.error('❌ Error conectando a MongoDB:', error);
+    throw error;
+  }
+}
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/organizador-universitario';
-
-const connectDB = async () => {
-    try {
-        console.log('🔗 Intentando conectar a MongoDB...');
-        console.log('URI:', MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@'));
-        
-        await mongoose.connect(MONGODB_URI);
-        console.log('✅ Conectado a MongoDB Atlas');
-        
-        // Verificar conexión
-        const db = mongoose.connection;
-        console.log('📊 Estado de la conexión:', db.readyState === 1 ? '✅ Conectado' : '❌ Desconectado');
-        
-        await inicializarDatos();
-    } catch (error) {
-        console.error('❌ Error conectando a MongoDB:', error.message);
-        console.error('🔍 Detalles del error:', error);
-        process.exit(1);
-    }
-};
-
+function getDB() {
+  if (!db) throw new Error('Database not initialized');
+  return db;
+}
 
 async function inicializarDatos() {
     try {
