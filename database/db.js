@@ -43,40 +43,82 @@ async function inicializarDatos() {
         const Progreso = require('./models/Progreso');
 
         // Verificar si ya hay datos
-        const materiasCount = await Materia.countDocuments();
+        const recompensasCount = await Recompensa.countDocuments();
         const progresoCount = await Progreso.countDocuments();
 
-        if (materiasCount === 0) {
-            console.log('📝 Insertando datos iniciales...');
+        if (recompensasCount === 0) {
+            console.log('🎁 Insertando recompensas estilo Twitch...');
             
-            // Insertar materias de ejemplo
-            const materias = await Materia.insertMany([
-                { nombre: 'Matemáticas', color: '#EC4899' },
-                { nombre: 'Literatura', color: '#8B5CF6' },
-                { nombre: 'Ciencias', color: '#10B981' },
-                { nombre: 'Historia', color: '#F59E0B' },
-                { nombre: 'Inglés', color: '#3B82F6' }
-            ]);
-
-            // Insertar recompensas
+            // Insertar recompensas MEJORADAS
             await Recompensa.insertMany([
-                { nombre: '📱 15 minutos de redes sociales', puntos_requeridos: 50 },
-                { nombre: '🍫 Chocolate favorito', puntos_requeridos: 100 },
-                { nombre: '🎬 Noche de película', puntos_requeridos: 200 },
-                { nombre: '☕ Café en tu lugar favorito', puntos_requeridos: 150 },
-                { nombre: '📚 Libro que querías', puntos_requeridos: 300 }
+                { 
+                    nombre: '📱 15 minutos de redes sociales', 
+                    puntos_requeridos: 50,
+                    categoria: 'digital',
+                    descripcion: 'Tómate un descanso de 15 minutos en redes',
+                    imagen: '📱',
+                    color: '#3B82F6'
+                },
+                { 
+                    nombre: '🍫 Chocolate favorito', 
+                    puntos_requeridos: 100,
+                    categoria: 'comida',
+                    descripcion: 'Un delicioso chocolate como recompensa',
+                    imagen: '🍫',
+                    color: '#8B5CF6'
+                },
+                { 
+                    nombre: '🎬 Noche de película', 
+                    puntos_requeridos: 200,
+                    categoria: 'experiencia',
+                    descripcion: 'Elige la película para nuestra noche de cine',
+                    imagen: '🎬',
+                    color: '#EC4899'
+                },
+                { 
+                    nombre: '☕ Café sorpresa', 
+                    puntos_requeridos: 150,
+                    categoria: 'comida',
+                    descripcion: 'Te llevaré por un café a tu lugar favorito',
+                    imagen: '☕',
+                    color: '#F59E0B'
+                },
+                { 
+                    nombre: '💝 Abrazo especial', 
+                    puntos_requeridos: 30,
+                    categoria: 'especial',
+                    descripcion: 'Un abrazo bien merecido',
+                    imagen: '💝',
+                    color: '#EF4444',
+                    canjeable_multiple: true
+                },
+                { 
+                    nombre: '📚 Libro que querías', 
+                    puntos_requeridos: 300,
+                    categoria: 'fisica',
+                    descripcion: 'El libro que tienes en tu lista de deseos',
+                    imagen: '📚',
+                    color: '#10B981'
+                },
+                { 
+                    nombre: '🎵 Playlist personalizada', 
+                    puntos_requeridos: 80,
+                    categoria: 'digital',
+                    descripcion: 'Una playlist hecha especialmente para ti',
+                    imagen: '🎵',
+                    color: '#8B5CF6'
+                },
+                { 
+                    nombre: '🍦 Helado de postre', 
+                    puntos_requeridos: 120,
+                    categoria: 'comida',
+                    descripcion: 'Un helado del sabor que tú elijas',
+                    imagen: '🍦',
+                    color: '#F59E0B'
+                }
             ]);
 
-            // Insertar progreso inicial
-            await Progreso.create({
-                puntos_totales: 0,
-                tareas_completadas: 0,
-                tiempo_estudio_total: 0,
-                racha_actual: 0,
-                mejor_racha: 0
-            });
-
-            console.log('🎉 Datos iniciales insertados correctamente');
+            console.log('🎉 Recompensas estilo Twitch insertadas correctamente');
         }
     } catch (error) {
         console.error('❌ Error inicializando datos:', error);
