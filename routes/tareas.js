@@ -1,141 +1,171 @@
-// routes/tareas.js - VERSIÓN MONGODB
+// routes/tareas.js - VERSIÓN MONGODB NATIVE CORREGIDA
 const express = require('express');
 const router = express.Router();
-const Tarea = require('../database/models/Tarea');
-const Progreso = require('../database/models/Progreso');
-const Recompensa = require('../database/models/Recompensa');
+const { getDB } = require('../database/db');
+const { ObjectId } = require('mongodb');
 
 // GET - Obtener todas las tareas
 router.get('/', async (req, res) => {
     try {
-        const tareas = await Tarea.find()
-            .populate('materia_id', 'nombre color')
+        const db = getDB();
+        const tareas = await db.collection('tareas').find({})
             .sort({ 
                 completada: 1,
                 prioridad: -1,
                 fecha_entrega: 1 
-            });
+            })
+            .toArray();
+
+        // Populate materia information
+        const tareasConMateria = await Promise.all(tareas.map(async (tarea) => {
+            if (tarea.materia_id) {
+                const materia = await db.collection('materias').findOne({ 
+                    _id: new ObjectId(tarea.materia_id) 
+                });
+                if (materia) {
+                    tarea.materia_nombre = materia.nombre;
+                    tarea.materia_color = materia.color;
+                }
+            }
+            return tarea;
+        }));
 
         res.json({
             success: true,
-            tareas: tareas.map(t => ({
-                id: t._id,
-                titulo: t.titulo,
-                descripcion: t.descripcion,
-                tipo: t.tipo,
-                materia_id: t.materia_id?._id,
-                materia_nombre: t.materia_id?.nombre,
-                materia_color: t.materia_id?.color,
-                fecha_entrega: t.fecha_entrega,
-                prioridad: t.prioridad,
-                completada: t.completada,
-                puntos: t.puntos,
-                fecha_creacion: t.createdAt
-            })),
+            tareas: tareasConMateria,
             total: tareas.length,
             pendientes: tareas.filter(t => !t.completada).length
         });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ success: false, error: error.message });
     }
 });
 
 // POST - Crear nueva tarea
 router.post('/', async (req, res) => {
     try {
+        const db = getDB();
         const { titulo, descripcion, tipo, materia_id, fecha_entrega, prioridad } = req.body;
 
-        const tarea = new Tarea({
+        const tareaData = {
             titulo,
-            descripcion,
+            descripcion: descripcion || '',
             tipo: tipo || 'tarea',
             materia_id: materia_id || null,
-            fecha_entrega,
-            prioridad: prioridad || 3
-        });
+            fecha_entrega: fecha_entrega || null,
+            prioridad: prioridad || 3,
+            completada: false,
+            puntos: 10,
+            fecha_creacion: new Date(),
+            fecha_completada: null
+        };
 
-        await tarea.save();
+        const result = await db.collection('tareas').insertOne(tareaData);
 
         res.json({
             success: true,
-            id: tarea._id,
+            id: result.insertedId,
             message: 'Tarea creada exitosamente 📝',
-            puntos_ganados: tarea.puntos
+            puntos_ganados: 10
         });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ success: false, error: error.message });
     }
 });
 
 // POST - Marcar tarea como completada
 router.post('/:id/completar', async (req, res) => {
     try {
-        const tarea = await Tarea.findById(req.params.id);
+        const db = getDB();
+        const tareaId = req.params.id;
+
+        const tarea = await db.collection('tareas').findOne({ 
+            _id: new ObjectId(tareaId) 
+        });
         
         if (!tarea) {
-            return res.status(404).json({ error: 'Tarea no encontrada' });
+            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
         }
 
         if (tarea.completada) {
-            return res.status(400).json({ error: 'La tarea ya estaba completada' });
+            return res.status(400).json({ success: false, error: 'La tarea ya estaba completada' });
         }
 
-        tarea.completada = true;
-        tarea.fecha_completada = new Date();
-        await tarea.save();
+        // Actualizar tarea
+        await db.collection('tareas').updateOne(
+            { _id: new ObjectId(tareaId) },
+            { 
+                $set: { 
+                    completada: true,
+                    fecha_completada: new Date()
+                } 
+            }
+        );
 
         // Actualizar progreso
-        await actualizarProgreso(tarea.puntos);
+        await actualizarProgreso(tarea.puntos || 10);
 
         res.json({
             success: true,
             message: '¡Tarea completada! ✅',
-            puntos_ganados: tarea.puntos,
+            puntos_ganados: tarea.puntos || 10,
             mensaje_especial: generarMensajeMotivacional()
         });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ success: false, error: error.message });
     }
 });
 
 // DELETE - Eliminar tarea
 router.delete('/:id', async (req, res) => {
     try {
-        await Tarea.findByIdAndDelete(req.params.id);
+        const db = getDB();
+        
+        const result = await db.collection('tareas').deleteOne({ 
+            _id: new ObjectId(req.params.id) 
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
+        }
         
         res.json({
             success: true,
             message: 'Tarea eliminada correctamente 🗑️'
         });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ success: false, error: error.message });
     }
 });
 
 // Funciones auxiliares
 async function actualizarProgreso(puntos) {
-    const progreso = await Progreso.getProgreso();
+    const db = getDB();
     
-    progreso.puntos_totales += puntos;
-    progreso.tareas_completadas += 1;
-    progreso.racha_actual += 1;
-    progreso.mejor_racha = Math.max(progreso.mejor_racha, progreso.racha_actual);
+    // En MongoDB Native, no necesitamos un modelo de Progreso
+    // Podemos calcular el progreso en tiempo real o crear una colección separada
     
-    await progreso.save();
-
-    // Verificar recompensas
-    await verificarRecompensas(progreso.puntos_totales);
+    // Por ahora, solo actualizamos las recompensas si es necesario
+    await verificarRecompensas();
 }
 
-async function verificarRecompensas(puntosTotales) {
-    await Recompensa.updateMany(
+async function verificarRecompensas() {
+    const db = getDB();
+    
+    // Calcular puntos totales
+    const tareas = await db.collection('tareas').find({ completada: true }).toArray();
+    const puntosTotales = tareas.reduce((total, tarea) => total + (tarea.puntos || 10), 0);
+    
+    // Actualizar recompensas desbloqueadas
+    await db.collection('recompensas').updateMany(
         { 
-            puntos_requeridos: { $lte: puntosTotales },
-            desbloqueada: false 
+            puntos_requeridos: { $lte: puntosTotales }
         },
         { 
-            desbloqueada: true,
-            fecha_desbloqueo: new Date()
+            $set: { 
+                desbloqueada: true,
+                fecha_desbloqueo: new Date()
+            } 
         }
     );
 }

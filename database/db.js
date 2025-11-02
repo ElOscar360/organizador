@@ -1,26 +1,32 @@
-// database/db.js - VERSIÓN CON LOGS
+// database/db.js - VERSIÓN MONGODB NATIVE CORREGIDA
 require('dotenv').config();
 
-const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 
 console.log('🔍 Verificando MONGODB_URI...');
 console.log('URI definida:', process.env.MONGODB_URI ? '✅ SÍ' : '❌ NO');
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/organizador-universitario';
 
+let db = null;
+let client = null;
+
 const connectDB = async () => {
     try {
         console.log('🔗 Intentando conectar a MongoDB...');
         console.log('URI:', MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@'));
         
-        await mongoose.connect(MONGODB_URI);
+        client = new MongoClient(MONGODB_URI);
+        await client.connect();
+        
+        db = client.db();
         console.log('✅ Conectado a MongoDB Atlas');
         
         // Verificar conexión
-        const db = mongoose.connection;
-        console.log('📊 Estado de la conexión:', db.readyState === 1 ? '✅ Conectado' : '❌ Desconectado');
+        console.log('📊 Base de datos conectada:', db.databaseName);
         
         await inicializarDatos();
+        return db;
     } catch (error) {
         console.error('❌ Error conectando a MongoDB:', error.message);
         console.error('🔍 Detalles del error:', error);
@@ -28,27 +34,24 @@ const connectDB = async () => {
     }
 };
 
-
 async function inicializarDatos() {
     try {
-        const Recompensa = require('./models/Recompensa');
-
         console.log('🔄 Actualizando estructura de recompensas...');
 
         // ACTUALIZAR: Remover el campo 'desbloqueada' de todas las recompensas existentes
-        await Recompensa.updateMany(
+        await db.collection('recompensas').updateMany(
             {}, 
             { $unset: { desbloqueada: "" } }
         );
         console.log('✅ Campo "desbloqueada" removido de recompensas existentes');
 
         // ELIMINAR todas las recompensas existentes
-        await Recompensa.deleteMany({});
+        await db.collection('recompensas').deleteMany({});
         console.log('🗑️ Recompensas antiguas eliminadas');
 
         // INSERTAR nuevas recompensas SIN el campo desbloqueada
         console.log('🎁 Insertando recompensas nuevas...');
-        await Recompensa.insertMany([
+        await db.collection('recompensas').insertMany([
             { 
                 nombre: '📱 15 minutos de redes sociales', 
                 puntos_requeridos: 50,
@@ -56,7 +59,8 @@ async function inicializarDatos() {
                 descripcion: 'Tómate un descanso de 15 minutos en redes',
                 imagen: '📱',
                 color: '#3B82F6',
-                canjeable_multiple: true
+                canjeable_multiple: true,
+                fecha_creacion: new Date()
             },
             { 
                 nombre: '🍫 Chocolate favorito', 
@@ -65,7 +69,8 @@ async function inicializarDatos() {
                 descripcion: 'Un delicioso chocolate como recompensa',
                 imagen: '🍫',
                 color: '#8B5CF6',
-                canjeable_multiple: true
+                canjeable_multiple: true,
+                fecha_creacion: new Date()
             },
             { 
                 nombre: '🎬 Noche de película', 
@@ -74,7 +79,8 @@ async function inicializarDatos() {
                 descripcion: 'Elige la película para nuestra noche de cine',
                 imagen: '🎬',
                 color: '#EC4899',
-                canjeable_multiple: true
+                canjeable_multiple: true,
+                fecha_creacion: new Date()
             },
             { 
                 nombre: '☕ Café sorpresa', 
@@ -83,7 +89,8 @@ async function inicializarDatos() {
                 descripcion: 'Te llevaré por un café a tu lugar favorito',
                 imagen: '☕',
                 color: '#F59E0B',
-                canjeable_multiple: true
+                canjeable_multiple: true,
+                fecha_creacion: new Date()
             },
             { 
                 nombre: '💝 Abrazo especial', 
@@ -92,7 +99,8 @@ async function inicializarDatos() {
                 descripcion: 'Un abrazo bien merecido',
                 imagen: '💝',
                 color: '#EF4444',
-                canjeable_multiple: true
+                canjeable_multiple: true,
+                fecha_creacion: new Date()
             },
             { 
                 nombre: '📚 Libro que querías', 
@@ -100,7 +108,8 @@ async function inicializarDatos() {
                 categoria: 'fisica',
                 descripcion: 'El libro que tienes en tu lista de deseos',
                 imagen: '📚',
-                color: '#10B981'
+                color: '#10B981',
+                fecha_creacion: new Date()
             },
             { 
                 nombre: '🎵 Playlist personalizada', 
@@ -108,7 +117,8 @@ async function inicializarDatos() {
                 categoria: 'digital',
                 descripcion: 'Una playlist hecha especialmente para ti',
                 imagen: '🎵',
-                color: '#8B5CF6'
+                color: '#8B5CF6',
+                fecha_creacion: new Date()
             },
             { 
                 nombre: '🍦 Helado de postre', 
@@ -116,7 +126,8 @@ async function inicializarDatos() {
                 categoria: 'comida',
                 descripcion: 'Un helado del sabor que tú elijas',
                 imagen: '🍦',
-                color: '#F59E0B'
+                color: '#F59E0B',
+                fecha_creacion: new Date()
             }
         ]);
         console.log('✅ Recompensas nuevas insertadas exitosamente');
@@ -125,5 +136,18 @@ async function inicializarDatos() {
     }
 }
 
+function getDB() {
+    if (!db) {
+        throw new Error('Database not initialized. Call connectDB first.');
+    }
+    return db;
+}
 
-module.exports = { connectDB, mongoose };
+async function closeDB() {
+    if (client) {
+        await client.close();
+        console.log('🔌 Conexión a MongoDB cerrada');
+    }
+}
+
+module.exports = { connectDB, getDB, closeDB };
