@@ -399,19 +399,19 @@ app.get('/', (req, res) => {
         // ========== FUNCIONES PARA MODALES ==========
         
         function mostrarModal(idModal) {
-            document.getElementById(idModal).style.display = 'block';
-        }
+    document.getElementById(idModal).style.display = 'block';
+}
 
-        function cerrarModal(idModal) {
-            document.getElementById(idModal).style.display = 'none';
-        }
+function cerrarModal(idModal) {
+    document.getElementById(idModal).style.display = 'none';
+}
 
-        // Cerrar modal al hacer clic fuera del contenido
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
+// Cerrar modal al hacer clic fuera del contenido
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
 
         // ========== FUNCIONES PRINCIPALES ==========
         
@@ -582,7 +582,9 @@ app.get('/', (req, res) => {
 
     const recompensasHTML = recompensas.map(recompensa => {
         const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
+        const recompensaId = recompensa._id ? recompensa._id.toString() : '';
         
+        // CORRECCIÓN: Usar comillas simples correctamente
         return '<div class="tarjeta-recompensa">' +
                     '<div class="info-recompensa">' +
                         '<div class="recompensa-titulo">' +
@@ -600,7 +602,7 @@ app.get('/', (req, res) => {
                         '</div>' +
                     '</div>' +
                     '<button class="btn-canjear" ' +
-                            'onclick="canjearRecompensa(\'' + recompensa._id + '\', ' + recompensa.puntos_requeridos + ')" ' +
+                            'onclick="canjearRecompensa(\\'' + recompensaId + '\\', ' + recompensa.puntos_requeridos + ')" ' +
                             (puedeCanjear ? '' : 'disabled') + '>' +
                         (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
                     '</button>' +
