@@ -1,9 +1,18 @@
-// server.js - VERSIÓN COMPLETA Y CORREGIDA PARA RENDER
+// server.js - VERSIÓN MONGODB + RENDER - CORREGIDO
 require('dotenv').config();
+
 
 const express = require('express');
 const path = require('path');
 const { connectDB } = require('./database/db');
+const horaColombia = new Date().toLocaleTimeString('es-CO', {
+  timeZone: 'America/Bogota',
+  hour12: false,  // si quieres formato 24h
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit'
+});
+
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -21,6 +30,7 @@ const horariosRoutes = require('./routes/horarios');
 const materiasRoutes = require('./routes/materias');
 const progressRoutes = require('./routes/progreso');
 const recompensasRoutes = require('./routes/recompensas');
+const { time, timeStamp } = require('console');
 
 // Usar rutas
 app.use('/api/tareas', tareasRoutes);
@@ -39,141 +49,6 @@ app.get('/', (req, res) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>🎀 Organizador Universitario My Melody 💖</title>
         <link rel="stylesheet" href="/css/style.css">
-        <style>
-            /* Estilos para la tienda de recompensas */
-            .btn-filtro {
-                background: #fce4ec;
-                border: 2px solid transparent;
-                color: #880e4f;
-                padding: 8px 16px;
-                border-radius: 20px;
-                cursor: pointer;
-                font-size: 0.9em;
-                transition: all 0.3s ease;
-            }
-
-            .btn-filtro:hover {
-                background: #f8bbd9;
-                transform: translateY(-2px);
-            }
-
-            .btn-filtro.active {
-                background: #ec4899;
-                color: white;
-                border-color: #ec4899;
-            }
-
-            .tarjeta-recompensa {
-                background: white;
-                border-radius: 15px;
-                padding: 20px;
-                margin-bottom: 15px;
-                border-left: 5px solid #ec4899;
-                box-shadow: 0 4px 15px rgba(236, 72, 153, 0.1);
-                transition: all 0.3s ease;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 15px;
-            }
-
-            .tarjeta-recompensa:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 6px 20px rgba(236, 72, 153, 0.15);
-            }
-
-            .info-recompensa {
-                flex: 1;
-            }
-
-            .recompensa-titulo {
-                font-size: 1.2em;
-                color: #880e4f;
-                margin-bottom: 5px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .recompensa-descripcion {
-                color: #666;
-                font-size: 0.9em;
-                margin-bottom: 8px;
-            }
-
-            .recompensa-puntos {
-                background: linear-gradient(45deg, #ec4899, #8b5cf6);
-                color: white;
-                padding: 4px 12px;
-                border-radius: 15px;
-                font-weight: bold;
-                font-size: 0.9em;
-            }
-
-            .recompensa-categoria {
-                background: #fce4ec;
-                color: #880e4f;
-                padding: 2px 8px;
-                border-radius: 10px;
-                font-size: 0.8em;
-                margin-right: 8px;
-            }
-
-            .btn-canjear {
-                background: linear-gradient(45deg, #10b981, #059669);
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 10px;
-                cursor: pointer;
-                font-weight: bold;
-                transition: all 0.3s ease;
-                min-width: 100px;
-            }
-
-            .btn-canjear:hover:not(:disabled) {
-                background: linear-gradient(45deg, #059669, #047857);
-                transform: scale(1.05);
-            }
-
-            .btn-canjear:disabled {
-                background: #9ca3af;
-                cursor: not-allowed;
-                transform: none;
-            }
-
-            .btn-canjear.canjeable-multiple {
-                background: linear-gradient(45deg, #8b5cf6, #7c3aed);
-            }
-
-            .btn-canjear.canjeable-multiple:hover:not(:disabled) {
-                background: linear-gradient(45deg, #7c3aed, #6d28d9);
-            }
-
-            .item-historial {
-                background: #f8f9fa;
-                border-radius: 10px;
-                padding: 15px;
-                margin-bottom: 10px;
-                border-left: 3px solid #ec4899;
-            }
-
-            .estado-pendiente {
-                background: #fef3c7;
-                color: #d97706;
-                padding: 2px 8px;
-                border-radius: 10px;
-                font-size: 0.8em;
-            }
-
-            .estado-entregada {
-                background: #d1fae5;
-                color: #059669;
-                padding: 2px 8px;
-                border-radius: 10px;
-                font-size: 0.8em;
-            }
-        </style>
     </head>
     <body>
         <div class="container">
@@ -416,188 +291,615 @@ app.get('/', (req, res) => {
         </div>
 
         <script>
-        // ========== SISTEMA DE RECOMPENSAS MEJORADO ==========
-
-        let recompensasGlobales = [];
-        let puntosActuales = 0;
-
-        // Cargar recompensas y puntos
-        async function cargarRecompensas() {
-            console.log('🎁 Iniciando carga de recompensas...');
-            try {
-                const responseRecompensas = await fetch('/api/recompensas');
-                const responseProgreso = await fetch('/api/progreso');
-
-                const dataRecompensas = await responseRecompensas.json();
-                const dataProgreso = await responseProgreso.json();
-
-                console.log('Datos recompensas:', dataRecompensas);
-                console.log('Datos progreso:', dataProgreso);
-
-                if (dataRecompensas.success && dataProgreso.success) {
-                    recompensasGlobales = dataRecompensas.recompensas;
-                    puntosActuales = dataProgreso.progreso.puntos_totales - dataProgreso.progreso.puntos_gastados;
-                    
-                    // Actualizar puntos en la UI
-                    document.getElementById('puntos-actuales').textContent = puntosActuales;
-                    
-                    // Mostrar todas las recompensas
-                    mostrarRecompensas(recompensasGlobales);
-                }
-            } catch (error) {
-                console.error('Error cargando recompensas:', error);
-                document.getElementById('recompensas-lista').innerHTML = 
-                    '<div style="color: red; padding: 20px; text-align: center;">' +
-                    '❌ Error cargando recompensas: ' + error.message +
-                    '</div>';
-            }
+        // ========== NUEVAS FUNCIONES PARA FORMULARIOS ==========
+        
+        // Funciones para los modales
+        function mostrarModal(idModal) {
+          document.getElementById(idModal).style.display = 'block';
+          // Cargar materias en los selects
+          if (idModal === 'modalTarea' || idModal === 'modalHorario') {
+            cargarMateriasParaSelect();
+          }
         }
 
-        // Mostrar recompensas en la UI
-        function mostrarRecompensas(recompensas) {
-            if (recompensas.length === 0) {
-                document.getElementById('recompensas-lista').innerHTML = 
-                    '<div style="text-align: center; padding: 40px; color: #880e4f;">' +
-                        '<div style="font-size: 3em; margin-bottom: 10px;">🎁</div>' +
-                        '<h3>No hay recompensas disponibles</h3>' +
-                        '<p>¡Vuelve más tarde!</p>' +
-                    '</div>';
-                return;
-            }
-
-            const recompensasHTML = recompensas.map(recompensa => {
-                const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
-                const claseBoton = recompensa.canjeable_multiple ? 'btn-canjear canjeable-multiple' : 'btn-canjear';
-                
-                return '<div class="tarjeta-recompensa" data-categoria="' + recompensa.categoria + '">' +
-                    '<div class="info-recompensa">' +
-                        '<div class="recompensa-titulo">' +
-                            '<span>' + recompensa.imagen + '</span>' +
-                            '<strong>' + recompensa.nombre + '</strong>' +
-                            '<span class="recompensa-categoria">' + obtenerNombreCategoria(recompensa.categoria) + '</span>' +
-                        '</div>' +
-                        '<div class="recompensa-descripcion">' + (recompensa.descripcion || '') + '</div>' +
-                        '<div style="display: flex; gap: 10px; align-items: center;">' +
-                            '<span class="recompensa-puntos">💎 ' + recompensa.puntos_requeridos + ' puntos</span>' +
-                            (recompensa.canjeable_multiple ? '<span style="color: #8b5cf6; font-size: 0.8em;">🔄 Múltiple</span>' : '') +
-                        '</div>' +
-                    '</div>' +
-                    '<button class="' + claseBoton + '" ' +
-                        'onclick="canjearRecompensa(\\'' + recompensa.id + '\\', ' + recompensa.puntos_requeridos + ')"' +
-                        (!puedeCanjear ? ' disabled' : '') + '>' +
-                        (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
-                    '</button>' +
-                '</div>';
-            }).join('');
-
-            document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
+        function cerrarModal(idModal) {
+          document.getElementById(idModal).style.display = 'none';
         }
 
-        // Filtrar recompensas por categoría
-        function filtrarRecompensas(categoria) {
-            // Actualizar botones activos
-            document.querySelectorAll('.btn-filtro').forEach(btn => {
-                btn.classList.remove('active');
+        // Cerrar modal al hacer clic fuera del contenido
+        window.onclick = function(event) {
+          if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+          }
+        }
+
+        // Cargar materias para los selects - VERSIÓN CORRECTA PARA MONGODB
+        async function cargarMateriasParaSelect() {
+          try {
+            const response = await fetch('/api/materias');
+            const data = await response.json();
+
+            if (data.success) {
+              const selectTarea = document.getElementById('selectMaterias');
+              const selectHorario = document.getElementById('selectMateriasHorario');
+
+              // Limpiar selects
+              selectTarea.innerHTML = '<option value="">Seleccionar materia...</option>';
+              selectHorario.innerHTML = '<option value="">Seleccionar materia...</option>';
+
+              // Agregar materias - CORREGIDO PARA MONGODB (_id)
+              data.materias.forEach(function(materia) {
+                const optionHTML = '<option value="' + materia.id + '">' + materia.nombre + '</option>';
+                selectTarea.innerHTML += optionHTML;
+                selectHorario.innerHTML += optionHTML;
+              });
+            }
+          } catch (error) {
+            console.error('Error cargando materias:', error);
+          }
+        }
+
+        // Crear nueva tarea
+        async function crearTarea(event) {
+          event.preventDefault();
+          const formData = new FormData(event.target);
+          const tareaData = {
+            titulo: formData.get('titulo'),
+            descripcion: formData.get('descripcion'),
+            tipo: formData.get('tipo'),
+            materia_id: formData.get('materia_id') || null,
+            fecha_entrega: formData.get('fecha_entrega'),
+            prioridad: parseInt(formData.get('prioridad'))
+          };
+          
+          try {
+            const response = await fetch('/api/tareas', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(tareaData)
             });
-            event.target.classList.add('active');
-
-            const recompensasFiltradas = categoria === 'todas' 
-                ? recompensasGlobales 
-                : recompensasGlobales.filter(r => r.categoria === categoria);
             
-            mostrarRecompensas(recompensasFiltradas);
+            const data = await response.json();
+            
+            if (data.success) {
+              alert('✅ Tarea creada exitosamente! Ganaste ' + data.puntos_ganados + ' puntos potenciales!');
+              cerrarModal('modalTarea');
+              event.target.reset();
+              cargarTareas();
+              cargarProgreso();
+            } else {
+              alert('❌ Error: ' + data.error);
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error al crear la tarea');
+          }
         }
 
-        // Canjear una recompensa
-        async function canjearRecompensa(recompensaId, puntosRequeridos) {
-            if (!confirm('¿Estás segura de que quieres canjear esta recompensa por ' + puntosRequeridos + ' puntos?')) {
-                return;
+        // Crear nueva materia
+        async function crearMateria(event) {
+          event.preventDefault();
+          const formData = new FormData(event.target);
+          const materiaData = {
+            nombre: formData.get('nombre'),
+            codigo: formData.get('codigo'),
+            creditos: formData.get('creditos') ? parseInt(formData.get('creditos')) : null,
+            color: formData.get('color')
+          };
+          
+          try {
+            const response = await fetch('/api/materias', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(materiaData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+              alert('✅ Materia creada exitosamente!');
+              cerrarModal('modalMateria');
+              event.target.reset();
+              cargarMateriasParaSelect();
+            } else {
+              alert('❌ Error: ' + data.error);
             }
+          } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error al crear la materia');
+          }
+        }
 
+        // Crear nuevo horario
+        async function crearHorario(event) {
+          event.preventDefault();
+          const formData = new FormData(event.target);
+          const horarioData = {
+            materia_id: formData.get('materia_id'),
+            dia: formData.get('dia'),
+            hora_inicio: formData.get('hora_inicio'),
+            hora_fin: formData.get('hora_fin'),
+            aula: formData.get('aula'),
+            profesor: formData.get('profesor')
+          };
+          
+          try {
+            const response = await fetch('/api/horarios', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(horarioData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+              alert('✅ Clase agregada al horario!');
+              cerrarModal('modalHorario');
+              event.target.reset();
+              cargarHorario();
+            } else {
+              alert('❌ Error: ' + data.error);
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Error al crear el horario');
+          }
+        }
+
+        // ========== FUNCIONES PARA ELIMINAR ==========
+        
+        // Función para eliminar tareas - CORREGIDA PARA MONGODB
+        async function eliminarTarea(id) {
+          if (confirm('¿Estás segura de que quieres eliminar esta tarea?')) {
             try {
-                const response = await fetch('/api/recompensas/' + recompensaId + '/canjear', {
-                    method: 'POST'
-                });
+              const response = await fetch(\`/api/tareas/\${id}\`, { 
+                method: 'DELETE' 
+              });
+              const data = await response.json();
+              
+              if (data.success) {
+                alert('✅ Tarea eliminada correctamente');
+                cargarTareas(); // Recargar la lista
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              alert('❌ Error al eliminar la tarea');
+            }
+          }
+        }
 
+        // Función para eliminar horarios - CORREGIDA PARA MONGODB
+        async function eliminarHorario(id) {
+          if (confirm('¿Estás segura de que quieres eliminar esta clase del horario?')) {
+            try {
+              const response = await fetch(\`/api/horarios/\${id}\`, { 
+                method: 'DELETE' 
+              });
+              const data = await response.json();
+              
+              if (data.success) {
+                alert('✅ Clase eliminada del horario');
+                cargarHorario(); // Recargar el horario
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              alert('❌ Error al eliminar la clase');
+            }
+          }
+        }
+
+        // ========== FIN DE NUEVAS FUNCIONES ==========
+                      // ========== SISTEMA DE RECOMPENSAS MEJORADO ==========
+
+              let recompensasGlobales = [];
+              let puntosActuales = 0;
+
+              // Cargar recompensas y puntos
+              async function cargarRecompensas() {
+                  try {
+                      const [responseRecompensas, responseProgreso] = await Promise.all([
+                          fetch('/api/recompensas'),
+                          fetch('/api/progreso')
+                      ]);
+
+                      const dataRecompensas = await responseRecompensas.json();
+                      const dataProgreso = await responseProgreso.json();
+
+                      if (dataRecompensas.success && dataProgreso.success) {
+                          recompensasGlobales = dataRecompensas.recompensas;
+                          puntosActuales = dataProgreso.progreso.puntos_totales - dataProgreso.progreso.puntos_gastados;
+                          
+                          // Actualizar puntos en la UI
+                          document.getElementById('puntos-actuales').textContent = puntosActuales;
+                          
+                          // Mostrar todas las recompensas
+                          mostrarRecompensas(recompensasGlobales);
+                      }
+                  } catch (error) {
+                      console.error('Error cargando recompensas:', error);
+                  }
+              }
+
+              // Mostrar recompensas en la UI
+              function mostrarRecompensas(recompensas) {
+                  if (recompensas.length === 0) {
+                      document.getElementById('recompensas-lista').innerHTML = 
+                          '<div style="text-align: center; padding: 40px; color: #880e4f;">' +
+                              '<div style="font-size: 3em; margin-bottom: 10px;">🎁</div>' +
+                              '<h3>No hay recompensas disponibles</h3>' +
+                              '<p>¡Vuelve más tarde!</p>' +
+                          '</div>';
+                      return;
+                  }
+
+                  const recompensasHTML = recompensas.map(recompensa => {
+                      const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
+                      const claseBoton = recompensa.canjeable_multiple ? 'btn-canjear canjeable-multiple' : 'btn-canjear';
+                      
+                      return '<div class="tarjeta-recompensa" data-categoria="' + recompensa.categoria + '">' +
+                                  '<div class="info-recompensa">' +
+                                      '<div class="recompensa-titulo">' +
+                                          '<span>' + recompensa.imagen + '</span>' +
+                                          '<strong>' + recompensa.nombre + '</strong>' +
+                                          '<span class="recompensa-categoria">' + obtenerNombreCategoria(recompensa.categoria) + '</span>' +
+                                      '</div>' +
+                                      '<div class="recompensa-descripcion">' + recompensa.descripcion + '</div>' +
+                                      '<div style="display: flex; gap: 10px; align-items: center;">' +
+                                          '<span class="recompensa-puntos">💎 ' + recompensa.puntos_requeridos + ' puntos</span>' +
+                                          (recompensa.canjeable_multiple ? '<span style="color: #8b5cf6; font-size: 0.8em;">🔄 Múltiple</span>' : '') +
+                                      '</div>' +
+                                  '</div>' +
+                                  '<button class="' + claseBoton + '" ' +
+                                          'onclick="canjearRecompensa(\'' + recompensa.id + '\', ' + recompensa.puntos_requeridos + ')"' +
+                                          (!puedeCanjear ? ' disabled' : '') + '>' +
+                                      (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
+                                  '</button>' +
+                              '</div>';
+                  }).join('');
+
+                  document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
+              }
+
+              // Filtrar recompensas por categoría
+              function filtrarRecompensas(categoria) {
+                  // Actualizar botones activos
+                  document.querySelectorAll('.btn-filtro').forEach(btn => {
+                      btn.classList.remove('active');
+                  });
+                  event.target.classList.add('active');
+
+                  const recompensasFiltradas = categoria === 'todas' 
+                      ? recompensasGlobales 
+                      : recompensasGlobales.filter(r => r.categoria === categoria);
+                  
+                  mostrarRecompensas(recompensasFiltradas);
+              }
+
+              // Canjear una recompensa
+              async function canjearRecompensa(recompensaId, puntosRequeridos) {
+                  if (!confirm('¿Estás segura de que quieres canjear esta recompensa por ' + puntosRequeridos + ' puntos?')) {
+                      return;
+                  }
+
+                  try {
+                      const response = await fetch('/api/recompensas/' + recompensaId + '/canjear', {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json',
+                          }
+                      });
+
+                      const data = await response.json();
+
+                      if (data.success) {
+                          alert('🎉 ¡Recompensa canjeada! Has gastado ' + puntosRequeridos + ' puntos\n💎 Puntos restantes: ' + data.puntos_restantes);
+                          
+                          // Recargar todo
+                          cargarRecompensas();
+                          cargarProgreso();
+                          cargarHistorialCanjes();
+                      } else {
+                          alert('❌ Error: ' + data.error);
+                      }
+                  } catch (error) {
+                      console.error('Error canjeando recompensa:', error);
+                      alert('❌ Error al canjear la recompensa');
+                  }
+              }
+
+              // Cargar historial de canjes
+              async function cargarHistorialCanjes() {
+                  try {
+                      const response = await fetch('/api/recompensas/historial');
+                      const data = await response.json();
+
+                      if (data.success) {
+                          mostrarHistorialCanjes(data.historial);
+                      }
+                  } catch (error) {
+                      console.error('Error cargando historial:', error);
+                  }
+              }
+
+              // Mostrar historial de canjes
+              function mostrarHistorialCanjes(historial) {
+                  if (historial.length === 0) {
+                      document.getElementById('historial-canjes').innerHTML = 
+                          '<div style="text-align: center; padding: 20px; color: #666;">' +
+                              '<p>No hay canjes recientes</p>' +
+                          '</div>';
+                      return;
+                  }
+
+                  const historialHTML = historial.map(canje => {
+                      return '<div class="item-historial">' +
+                                  '<div style="display: flex; justify-content: between; align-items: center;">' +
+                                      '<div style="flex: 1;">' +
+                                          '<strong>' + canje.recompensa + '</strong>' +
+                                          '<div style="color: #666; font-size: 0.9em;">' +
+                                              '💎 ' + canje.puntos + ' puntos • ' + new Date(canje.fecha).toLocaleDateString() +
+                                          '</div>' +
+                                      '</div>' +
+                                      '<span class="estado-' + canje.estado + '">' + canje.estado + '</span>' +
+                                  '</div>' +
+                              '</div>';
+                  }).join('');
+
+                  document.getElementById('historial-canjes').innerHTML = historialHTML;
+              }
+
+              // Helper para nombres de categorías
+              function obtenerNombreCategoria(categoria) {
+                  const categorias = {
+                      'digital': 'Digital',
+                      'comida': 'Comida',
+                      'experiencia': 'Experiencia',
+                      'especial': 'Especial',
+                      'fisica': 'Física'
+                  };
+                  return categorias[categoria] || categoria;
+              }
+
+              // ========== FIN SISTEMA DE RECOMPENSAS ==========
+        
+        
+        // Funciones globales simples para los botones
+        async function cargarTareas() {
+            try {
+                const response = await fetch('/api/tareas');
                 const data = await response.json();
+                mostrarTareas(data.tareas);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
 
+        async function cargarHorario() {
+            try {
+                const response = await fetch('/api/horarios');
+                const data = await response.json();
+                mostrarHorario(data.horarios);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function obtenerMensajeEspecial() {
+            try {
+                const response = await fetch('/api/mensaje-especial');
+                const data = await response.json();
+                document.getElementById('mensaje-especial').innerHTML = \`
+                    <strong>💕 \${data.mensaje}</strong>
+                    <br><small>🕒 \${data.timestamp}</small>
+                \`;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // FUNCIÓN COMPLETAR TAREA - CORREGIDA PARA MONGODB
+        async function completarTarea(id) {
+            try {
+                const response = await fetch(\`/api/tareas/\${id}/completar\`, { method: 'POST' });
+                const data = await response.json();
                 if (data.success) {
-                    alert('🎉 ¡Recompensa canjeada! Has gastado ' + puntosRequeridos + ' puntos\\n💎 Puntos restantes: ' + data.puntos_restantes);
-                    
-                    // Recargar todo
-                    cargarRecompensas();
+                    alert(data.message + '\\\\n' + data.mensaje_especial);
+                    cargarTareas();
                     cargarProgreso();
+                    cargarRecompensas();
                 } else {
                     alert('❌ Error: ' + data.error);
                 }
             } catch (error) {
-                console.error('Error canjeando recompensa:', error);
-                alert('❌ Error al canjear la recompensa');
+                console.error('Error:', error);
+                alert('❌ Error al completar la tarea');
             }
         }
 
-        // Cargar historial de canjes
-        async function cargarHistorialCanjes() {
+        async function cargarProgreso() {
             try {
-                const response = await fetch('/api/recompensas/historial');
+                const response = await fetch('/api/progreso');
                 const data = await response.json();
-
-                if (data.success) {
-                    mostrarHistorialCanjes(data.historial);
-                }
+                mostrarProgreso(data.progreso);
             } catch (error) {
-                console.error('Error cargando historial:', error);
+                console.error('Error:', error);
             }
         }
 
-        // Mostrar historial de canjes
-        function mostrarHistorialCanjes(historial) {
-            if (historial.length === 0) {
-                document.getElementById('historial-canjes').innerHTML = 
-                    '<div style="text-align: center; padding: 20px; color: #666;">' +
-                        '<p>No hay canjes recientes</p>' +
-                    '</div>';
-                return;
-            }
+        function mostrarProgreso(progreso) {
+            document.getElementById('progreso-info').innerHTML = \`
+                <div style="text-align: center;">
+                    <h3 style="color: #880e4f; margin-bottom: 15px;">⭐ Mi Progreso 🌟</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div style="background: #fce4ec; padding: 15px; border-radius: 15px;">
+                            <div style="font-size: 2em; color: #ec4899;">\${progreso.puntos_totales}</div>
+                            <div style="color: #880e4f;">🎯 Puntos</div>
+                        </div>
+                        <div style="background: #fce4ec; padding: 15px; border-radius: 15px;">
+                            <div style="font-size: 2em; color: #ec4899;">\${progreso.tareas_completadas}</div>
+                            <div style="color: #880e4f;">✅ Tareas</div>
+                        </div>
+                    </div>
+                </div>
+            \`;
+        }
 
-            const historialHTML = historial.map(canje => {
-                return '<div class="item-historial">' +
-                    '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                        '<div style="flex: 1;">' +
-                            '<strong>' + canje.recompensa + '</strong>' +
-                            '<div style="color: #666; font-size: 0.9em;">' +
-                                '💎 ' + canje.puntos + ' puntos • ' + new Date(canje.fecha).toLocaleDateString() +
-                            '</div>' +
-                        '</div>' +
-                        '<span class="estado-' + canje.estado + '">' + canje.estado + '</span>' +
-                    '</div>' +
-                '</div>';
+        // FUNCIÓN MOSTRAR TAREAS - COMPLETAMENTE CORREGIDA PARA MONGODB
+        function mostrarTareas(tareas) {
+          if (tareas.length === 0) {
+            document.getElementById('tareas-lista').innerHTML = \`
+              <div style="text-align: center; padding: 30px; color: #880e4f;">
+                <div style="font-size: 3em; margin-bottom: 10px;">🎀</div>
+                <h3>¡No hay tareas pendientes!</h3>
+                <p>¡Eres una estudiante ejemplar! 💖</p>
+              </div>
+            \`;
+            return;
+          }
+
+          const tareasHTML = tareas.map(tarea => {
+            const tareaId = tarea._id || tarea.id;
+            const fechaEntrega = tarea.fecha_entrega ? new Date(tarea.fecha_entrega).toLocaleDateString() : '';
+            
+            return \`
+            <div class="item-tarea \${tarea.completada ? 'tarea-completada' : ''}">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <span class="color-materia" style="background-color: \${tarea.materia_color || '#EC4899'};"></span>
+                    <strong style="color: #880e4f;">\${tarea.materia_nombre || 'General'}</strong>
+                    <span style="margin-left: auto; background: #ff9eb5; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">
+                      \${obtenerEmojiTipo(tarea.tipo)} \${tarea.tipo}
+                    </span>
+                  </div>
+                  <div style="color: #880e4f; font-size: 1.1em; margin-bottom: 5px;">\${tarea.titulo}</div>
+                  \${tarea.descripcion ? \`<div style="color: #666; margin-bottom: 8px; font-size: 0.9em;">\${tarea.descripcion}</div>\` : ''}
+                  <div style="display: flex; gap: 15px; font-size: 0.85em; color: #888;">
+                    \${fechaEntrega ? \`<span>📅 \${fechaEntrega}</span>\` : ''}
+                    <span>⭐ Prioridad: \${'★'.repeat(tarea.prioridad)}\${'☆'.repeat(5-tarea.prioridad)}</span>
+                    <span>🎯 \${tarea.puntos} puntos</span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-direction: column; min-width: 120px;">
+                  \${!tarea.completada ? \`
+                    <button class="btn btn-pequeno" onclick="completarTarea('\${tareaId}')" 
+                            style="background: #10b981;">
+                      ✅ Completar
+                    </button>
+                  \` : \`
+                    <span style="color: #10b981; font-weight: bold; text-align: center;">
+                      ✅ Completada
+                    </span>
+                  \`}
+                  <button class="btn btn-pequeno" onclick="eliminarTarea('\${tareaId}')" 
+                          style="background: #ef4444;">
+                    🗑️ Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+            \`;
+          }).join('');
+          
+          document.getElementById('tareas-lista').innerHTML = tareasHTML;
+        }
+
+        // FUNCIÓN MOSTRAR HORARIO - CORREGIDA PARA MONGODB
+        function mostrarHorario(horarios) {
+          if (horarios.length === 0) {
+            document.getElementById('horario-lista').innerHTML = \`
+              <div style="text-align: center; padding: 20px; color: #880e4f;">
+                <div style="font-size: 2em; margin-bottom: 10px;">🕐</div>
+                <p>No hay clases en el horario aún</p>
+              </div>
+            \`;
+            return;
+          }
+
+          const horarioHTML = horarios.map(horario => {
+            const horarioId = horario._id || horario.id;
+            
+            return \`
+            <div class="item-tarea">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+                <div style="flex: 1;">
+                  <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                    <span class="color-materia" style="background-color: \${horario.materia_color};"></span>
+                    <strong style="color: #880e4f; flex: 1;">\${horario.materia_nombre}</strong>
+                    <span style="background: #ff9eb5; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.9em;">
+                      🕐 \${horario.hora_inicio} - \${horario.hora_fin}
+                    </span>
+                  </div>
+                  <div style="color: #666; font-size: 0.9em;">\${horario.dia}</div>
+                  \${horario.aula ? \`<div style="color: #666; font-size: 0.9em;">🏫 \${horario.aula}</div>\` : ''}
+                  \${horario.profesor ? \`<div style="color: #666; font-size: 0.9em;">👨‍🏫 \${horario.profesor}</div>\` : ''}
+                </div>
+                <button class="btn btn-pequeno" onclick="eliminarHorario('\${horarioId}')" 
+                        style="background: #ef4444; min-width: 60px;">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            </div>
+            \`;
+          }).join('');
+          
+          document.getElementById('horario-lista').innerHTML = horarioHTML;
+        }
+
+        function mostrarRecompensas(progreso, recompensas) {
+            const puntosTotales = progreso.puntos_totales;
+            
+            const recompensasHTML = recompensas.map(recompensa => {
+                const porcentaje = Math.min((puntosTotales / recompensa.puntos_requeridos) * 100, 100);
+                const estaDesbloqueada = recompensa.desbloqueada;
+                
+                return \`
+                    <div class="item-recompensa \${estaDesbloqueada ? 'recompensa-desbloqueada' : ''}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="color: #880e4f; font-size: 1.1em;">\${recompensa.nombre}</strong>
+                            \${estaDesbloqueada ? \`
+                                <span style="background: #10b981; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.8em;">
+                                    🎉 ¡DESBLOQUEADA!
+                                </span>
+                            \` : ''}
+                        </div>
+                        <div class="barra-progreso">
+                            <div class="relleno-progreso" style="width: \${porcentaje}%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #666;">
+                            <span>\${puntosTotales} / \${recompensa.puntos_requeridos} puntos</span>
+                            <span>\${Math.round(porcentaje)}% completado</span>
+                        </div>
+                    </div>
+                \`;
             }).join('');
-
-            document.getElementById('historial-canjes').innerHTML = historialHTML;
+            
+            document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
         }
 
-        // Helper para nombres de categorías
-        function obtenerNombreCategoria(categoria) {
-            const categorias = {
-                'digital': 'Digital',
-                'comida': 'Comida',
-                'experiencia': 'Experiencia',
-                'especial': 'Especial',
-                'fisica': 'Física'
+        function obtenerEmojiTipo(tipo) {
+            const emojis = {
+                'tarea': '📝',
+                'quiz': '📋',
+                'parcial': '📊',
+                'trabajo': '📄',
+                'proyecto': '📚'
             };
-            return categorias[categoria] || categoria;
+            return emojis[tipo] || '📌';
         }
-
-        // ========== FIN SISTEMA DE RECOMPENSAS ==========
 
         // Cargar todo al iniciar
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Iniciando aplicación...');
             cargarProgreso();
             cargarTareas();
             cargarHorario();
-            cargarRecompensas(); // ¡ESTA ES LA NUEVA!
+            cargarRecompensas();
         });
         </script>
     </body>
@@ -621,63 +923,15 @@ app.get('/api/mensaje-especial', (req, res) => {
   ];
   const mensajeAleatorio = mensajes[Math.floor(Math.random() * mensajes.length)];
   
-  res.json({ 
+  res.json({
     mensaje: mensajeAleatorio,
     emoji: "💖🎀📚🌟",
     timestamp: new Date().toLocaleTimeString()
   });
-  
 });
-// Ruta de diagnóstico completo
-app.get('/api/debug-completo', async (req, res) => {
-    try {
-        const Recompensa = require('./database/models/Recompensa');
-        const Progreso = require('./database/models/Progreso');
-        const Tarea = require('./database/models/Tarea');
-        const Horario = require('./database/models/Horario');
-        
-        const recompensasCount = await Recompensa.countDocuments();
-        const progreso = await Progreso.findOne();
-        const tareasCount = await Tarea.countDocuments();
-        const horariosCount = await Horario.countDocuments();
-        
-        res.json({
-            estado: '✅ Todo funciona correctamente',
-            base_datos: {
-                recompensas: recompensasCount,
-                tareas: tareasCount,
-                horarios: horariosCount,
-                progreso: progreso
-            },
-            rutas: {
-                recompensas: '/api/recompensas',
-                progreso: '/api/progreso',
-                tareas: '/api/tareas',
-                horarios: '/api/horarios'
-            }
-        });
-    } catch (error) {
-        res.json({ 
-            estado: '❌ Error',
-            error: error.message
-        });
-    }
-});
-// Cargar todo al iniciar - VERSIÓN CON LOGS
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOMContentLoaded - Iniciando aplicación...');
-    
-    // Verificar que los elementos existen
-    console.log('🔍 Elementos encontrados:');
-    console.log('- progreso-info:', document.getElementById('progreso-info'));
-    console.log('- tareas-lista:', document.getElementById('tareas-lista'));
-    console.log('- horario-lista:', document.getElementById('horario-lista'));
-    console.log('- recompensas-lista:', document.getElementById('recompensas-lista'));
-    console.log('- puntos-actuales:', document.getElementById('puntos-actuales'));
-    
-    // Ejecutar funciones
-    cargarProgreso();
-    cargarTareas();
-    cargarHorario();
-    cargarRecompensas();
+
+// Iniciar el servidor
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🎀 Servidor corriendo en: http://localhost:${PORT}`);
+  console.log(`🚀 Listo para producción en Render.com`);
 });
