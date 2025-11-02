@@ -953,17 +953,20 @@ app.get('/api/progreso', async (req, res) => {
 // API de recompensas
 app.get('/api/recompensas', async (req, res) => {
     try {
+        console.log('🔍 [SERVER] Buscando recompensas en MongoDB...');
         const db = getDB();
-        const recompensas = await db.collection('recompensas').find({ activa: true }).toArray();
         
-        console.log('🎁 Enviando recompensas al frontend:', recompensas.length);
+        const recompensas = await db.collection('recompensas').find({}).toArray();
+        console.log('📊 [SERVER] Recompensas encontradas:', recompensas.length);
         
         res.json({
             success: true,
             recompensas: recompensas
         });
+        
+        console.log('✅ [SERVER] Recompensas enviadas al frontend');
     } catch (error) {
-        console.error('❌ Error en /api/recompensas:', error);
+        console.error('❌ [SERVER] Error en /api/recompensas:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
