@@ -130,6 +130,87 @@ app.get('/', (req, res) => {
                 align-items: center;
                 gap: 5px;
             }
+             /* === AGREGAR AQUÍ LOS NUEVOS ESTILOS DE RECOMPENSAS === */
+                .tarjeta-recompensa {
+                    background: white;
+                    border-radius: 15px;
+                    padding: 20px;
+                    margin-bottom: 15px;
+                    border: 2px solid #ff9eb5;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }
+                .info-recompensa {
+                    flex: 1;
+                }
+                .recompensa-titulo {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 8px;
+                    flex-wrap: wrap;
+                }
+                .recompensa-categoria {
+                    background: #8b5cf6;
+                    color: white;
+                    padding: 3px 8px;
+                    border-radius: 10px;
+                    font-size: 0.8em;
+                }
+                .recompensa-descripcion {
+                    color: #666;
+                    margin: 10px 0;
+                    line-height: 1.4;
+                }
+                .recompensa-puntos {
+                    background: #fce4ec;
+                    padding: 5px 10px;
+                    border-radius: 15px;
+                    color: #880e4f;
+                    font-weight: bold;
+                    display: inline-block;
+                }
+                .btn-canjear {
+                    background: #10b981;
+                    color: white;
+                    border: none;
+                    padding: 12px 20px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    min-width: 120px;
+                    font-size: 14px;
+                    transition: background 0.3s;
+                }
+                .btn-canjear:hover:not(:disabled) {
+                    background: #059669;
+                    transform: translateY(-2px);
+                }
+                .btn-canjear:disabled {
+                    background: #9ca3af;
+                    cursor: not-allowed;
+                    transform: none;
+                }
+                .btn-filtro {
+                    background: #fce4ec;
+                    border: 2px solid #ff9eb5;
+                    padding: 8px 15px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    color: #880e4f;
+                    font-weight: bold;
+                    transition: all 0.3s;
+                }
+                .btn-filtro:hover {
+                    background: #fbcfe8;
+                }
+                .btn-filtro.active {
+                    background: #ec4899;
+                    color: white;
+                    border-color: #ec4899;
+                }
         </style>
     </head>
     <body>
@@ -487,42 +568,47 @@ app.get('/', (req, res) => {
         }
 
         function mostrarRecompensas(recompensas) {
-            if (recompensas.length === 0) {
-                document.getElementById('recompensas-lista').innerHTML = 
-                    '<div style="text-align: center; padding: 40px; color: #880e4f;">' +
-                        '<div style="font-size: 3em; margin-bottom: 10px;">🎁</div>' +
-                        '<h3>No hay recompensas disponibles</h3>' +
-                        '<p>¡Vuelve más tarde!</p>' +
-                    '</div>';
-                return;
-            }
+    console.log('Mostrando recompensas:', recompensas);
+    
+    if (!recompensas || recompensas.length === 0) {
+        document.getElementById('recompensas-lista').innerHTML = 
+            '<div style="text-align: center; padding: 40px; color: #880e4f;">' +
+                '<div style="font-size: 3em; margin-bottom: 10px;">🎁</div>' +
+                '<h3>No hay recompensas disponibles</h3>' +
+                '<p>¡Vuelve más tarde!</p>' +
+            '</div>';
+        return;
+    }
 
-            const recompensasHTML = recompensas.map(recompensa => {
-                const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
-                
-                return '<div class="tarjeta-recompensa" data-categoria="' + recompensa.categoria + '">' +
-                            '<div class="info-recompensa">' +
-                                '<div class="recompensa-titulo">' +
-                                    '<span>' + (recompensa.imagen || '🎁') + '</span>' +
-                                    '<strong>' + recompensa.nombre + '</strong>' +
-                                    '<span class="recompensa-categoria">' + obtenerNombreCategoria(recompensa.categoria) + '</span>' +
-                                '</div>' +
-                                '<div class="recompensa-descripcion">' + recompensa.descripcion + '</div>' +
-                                '<div style="display: flex; gap: 10px; align-items: center;">' +
-                                    '<span class="recompensa-puntos">💎 ' + recompensa.puntos_requeridos + ' puntos</span>' +
-                                    (recompensa.canjeable_multiple ? '<span style="color: #8b5cf6; font-size: 0.8em;">🔄 Múltiple</span>' : '') +
-                                '</div>' +
-                            '</div>' +
-                            '<button class="btn-canjear" ' +
-                                    'onclick="canjearRecompensa(\\'' + recompensa._id + '\\', ' + recompensa.puntos_requeridos + ')"' +
-                                    (!puedeCanjear ? ' disabled' : '') + '>' +
-                                (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
-                            '</button>' +
-                        '</div>';
-            }).join('');
+    const recompensasHTML = recompensas.map(recompensa => {
+        const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
+        
+        return '<div class="tarjeta-recompensa">' +
+                    '<div class="info-recompensa">' +
+                        '<div class="recompensa-titulo">' +
+                            '<span style="font-size: 1.5em; margin-right: 10px;">' + (recompensa.imagen || '🎁') + '</span>' +
+                            '<strong style="font-size: 1.1em; color: #880e4f;">' + recompensa.nombre + '</strong>' +
+                            '<span class="recompensa-categoria">' + obtenerNombreCategoria(recompensa.categoria) + '</span>' +
+                        '</div>' +
+                        '<div class="recompensa-descripcion">' + recompensa.descripcion + '</div>' +
+                        '<div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">' +
+                            '<span class="recompensa-puntos">💎 ' + recompensa.puntos_requeridos + ' puntos</span>' +
+                            (recompensa.canjeable_multiple ? 
+                                '<span style="color: #8b5cf6; font-size: 0.8em; background: #f3f4f6; padding: 3px 8px; border-radius: 10px;">🔄 Múltiple</span>' : 
+                                ''
+                            ) +
+                        '</div>' +
+                    '</div>' +
+                    '<button class="btn-canjear" ' +
+                            'onclick="canjearRecompensa(\'' + recompensa._id + '\', ' + recompensa.puntos_requeridos + ')" ' +
+                            (puedeCanjear ? '' : 'disabled') + '>' +
+                        (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
+                    '</button>' +
+                '</div>';
+    }).join('');
 
-            document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
-        }
+    document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
+}
 
         function filtrarRecompensas(categoria) {
             document.querySelectorAll('.btn-filtro').forEach(btn => {
