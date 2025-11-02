@@ -582,6 +582,7 @@ app.get('/', (req, res) => {
     const recompensasHTML = recompensas.map(recompensa => {
         const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
         
+        // ✅ VERSIÓN CORREGIDA - sin errores de comillas
         return '<div class="tarjeta-recompensa">' +
                     '<div class="info-recompensa">' +
                         '<div class="recompensa-titulo">' +
@@ -598,9 +599,7 @@ app.get('/', (req, res) => {
                             ) +
                         '</div>' +
                     '</div>' +
-                    '<button class="btn-canjear" ' +
-                            'onclick="canjearRecompensa(\'' + recompensa._id + '\', ' + recompensa.puntos_requeridos + ')" ' +
-                            (puedeCanjear ? '' : 'disabled') + '>' +
+                    '<button class="btn-canjear" onclick="canjearRecompensa(\'' + recompensa._id + '\', ' + recompensa.puntos_requeridos + ')" ' + (puedeCanjear ? '' : 'disabled') + '>' +
                         (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
                     '</button>' +
                 '</div>';
