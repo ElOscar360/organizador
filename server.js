@@ -883,6 +883,56 @@ app.get('/', (req, res) => {
   `);
 });
 
+// ========== RUTAS API QUE FALTAN ==========
+// API de materias
+app.get('/api/materias', async (req, res) => {
+  try {
+    const db = getDB();
+    const materias = await db.collection('materias').find({}).toArray();
+    res.json({ success: true, materias });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// API para crear materias
+app.post('/api/materias', async (req, res) => {
+  try {
+    const db = getDB();
+    const materiaData = {
+      ...req.body,
+      fecha_creacion: new Date()
+    };
+    
+    const result = await db.collection('materias').insertOne(materiaData);
+    
+    res.json({
+      success: true,
+      materia_id: result.insertedId,
+      message: 'Materia creada exitosamente'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+// API de recompensas - ESTA RUTA FALTA
+app.get('/api/recompensas', async (req, res) => {
+  try {
+    const db = getDB();
+    const recompensas = await db.collection('recompensas').find({}).toArray();
+    
+    console.log('🎁 Enviando recompensas al frontend:', recompensas.length);
+    
+    res.json({
+      success: true,
+      recompensas: recompensas
+    });
+  } catch (error) {
+    console.error('❌ Error en /api/recompensas:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // API de mensajes especiales
 app.get('/api/mensaje-especial', (req, res) => {
   const mensajes = [
