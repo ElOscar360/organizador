@@ -1,4 +1,4 @@
-// server.js - VERSIÓN COMPLETA CORREGIDA
+// server.js - VERSIÓN SIN MODALES + MONGODB NATIVE
 require('dotenv').config();
 
 const express = require('express');
@@ -27,7 +27,7 @@ app.use('/api/horarios', horariosRoutes);
 app.use('/api/materias', materiasRoutes);
 app.use('/api/recompensas', recompensasRoutes);
 
-// Ruta principal MEJORADA
+// Ruta principal MEJORADA - SIN MODALES
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -37,6 +37,35 @@ app.get('/', (req, res) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>🎀 Organizador Universitario My Melody 💖</title>
         <link rel="stylesheet" href="/css/style.css">
+        <style>
+            .form-simple {
+                background: #fce4ec;
+                padding: 20px;
+                border-radius: 15px;
+                margin: 15px 0;
+            }
+            .form-grupo {
+                margin-bottom: 15px;
+            }
+            .form-label {
+                display: block;
+                margin-bottom: 5px;
+                color: #880e4f;
+                font-weight: bold;
+            }
+            .form-input, .form-select, .form-textarea {
+                width: 100%;
+                padding: 10px;
+                border: 2px solid #ff9eb5;
+                border-radius: 10px;
+                background: white;
+            }
+            .form-botones {
+                display: flex;
+                gap: 10px;
+                margin-top: 20px;
+            }
+        </style>
     </head>
     <body>
         <div class="container">
@@ -53,60 +82,138 @@ app.get('/', (req, res) => {
                 <div class="tarjeta">
                     <div class="tarjeta-header">
                         <h2 class="tarjeta-titulo">📚 Mis Tareas</h2>
-                        <button class="btn-accion btn-tarea" onclick="mostrarModal('modalTarea')">
-                        <span>➕</span> Nueva Tarea
-                        </button>
-                        </div>
-                            <button class="btn" onclick="cargarTareas()">🔄 Actualizar Tareas</button>
-                        <div id="tareas-lista" style="margin-top: 20px;">Cargando tareas...</div>
-            </div>
+                        <button class="btn" onclick="cargarTareas()">🔄 Actualizar Tareas</button>
+                    </div>
+                    
+                    <!-- Formulario simple para nueva tarea -->
+                    <div class="form-simple">
+                        <h3 style="color: #880e4f; margin-bottom: 15px;">➕ Nueva Tarea</h3>
+                        <form id="formTarea">
+                            <div class="form-grupo">
+                                <label class="form-label">Título *</label>
+                                <input type="text" class="form-input" name="titulo" required placeholder="Estudiar para el parcial...">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">Descripción</label>
+                                <textarea class="form-textarea" name="descripcion" placeholder="Detalles..."></textarea>
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">Tipo</label>
+                                <select class="form-select" name="tipo">
+                                    <option value="tarea">📝 Tarea normal</option>
+                                    <option value="quiz">📋 Quiz</option>
+                                    <option value="parcial">📊 Parcial</option>
+                                    <option value="trabajo">📄 Trabajo</option>
+                                    <option value="proyecto">📚 Proyecto</option>
+                                </select>
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">Prioridad</label>
+                                <select class="form-select" name="prioridad">
+                                    <option value="1">⭐ Baja</option>
+                                    <option value="2">⭐⭐ Media-Baja</option>
+                                    <option value="3" selected>⭐⭐⭐ Media</option>
+                                    <option value="4">⭐⭐⭐⭐ Alta</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Urgente</option>
+                                </select>
+                            </div>
+                            <div class="form-botones">
+                                <button type="button" class="btn btn-secundario" onclick="document.getElementById('formTarea').reset()">🔄 Limpiar</button>
+                                <button type="button" class="btn" onclick="crearTarea()">💾 Guardar Tarea</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div id="tareas-lista" style="margin-top: 20px;">Cargando tareas...</div>
+                </div>
 
                 <!-- Sección de Horario -->
                 <div class="tarjeta">
                     <div class="tarjeta-header">
-                <h2 class="tarjeta-titulo">🕐 Mi Horario</h2>
-                    <button class="btn-accion btn-horario" onclick="mostrarModal('modalHorario')">
-                    <span>➕</span> Nueva Clase
-                </button>
-                </div>
-                    <button class="btn" onclick="cargarHorario()">🔄 Actualizar Horario</button>
-                    <div id="horario-lista" style="margin-top: 20px;">Cargando horario...</div>
+                        <h2 class="tarjeta-titulo">🕐 Mi Horario</h2>
+                        <button class="btn" onclick="cargarHorario()">🔄 Actualizar Horario</button>
                     </div>
-
-                <!-- Sección de Recompensas - VERSIÓN MEJORADA -->
-                        <div class="tarjeta tarjeta-ancha">
-                            <div class="tarjeta-header">
-                                <h2 class="tarjeta-titulo">🎁 Tienda de Recompensas</h2>
-                                <div style="display: flex; align-items: center; gap: 15px;">
-                                    <div style="background: #fce4ec; padding: 8px 15px; border-radius: 20px;">
-                                        <strong>💎 <span id="puntos-actuales">0</span> puntos disponibles</strong>
-                                    </div>
-                                    <button class="btn" onclick="cargarRecompensas()">🔄 Actualizar</button>
+                    
+                    <!-- Formulario simple para nueva clase -->
+                    <div class="form-simple">
+                        <h3 style="color: #880e4f; margin-bottom: 15px;">➕ Nueva Clase</h3>
+                        <form id="formHorario">
+                            <div class="form-grupo">
+                                <label class="form-label">Materia *</label>
+                                <input type="text" class="form-input" name="materia_nombre" required placeholder="Ej: Matemáticas">
+                            </div>
+                            <div class="form-grupo">
+                                <label class="form-label">Día *</label>
+                                <select class="form-select" name="dia" required>
+                                    <option value="Lunes">Lunes</option>
+                                    <option value="Martes">Martes</option>
+                                    <option value="Miércoles">Miércoles</option>
+                                    <option value="Jueves">Jueves</option>
+                                    <option value="Viernes">Viernes</option>
+                                    <option value="Sábado">Sábado</option>
+                                </select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div class="form-grupo">
+                                    <label class="form-label">Hora inicio *</label>
+                                    <input type="time" class="form-input" name="hora_inicio" required>
+                                </div>
+                                <div class="form-grupo">
+                                    <label class="form-label">Hora fin *</label>
+                                    <input type="time" class="form-input" name="hora_fin" required>
                                 </div>
                             </div>
-
-                            <!-- Filtros de categorías -->
-                            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                                <button class="btn-filtro active" onclick="filtrarRecompensas('todas')">Todas</button>
-                                <button class="btn-filtro" onclick="filtrarRecompensas('digital')">📱 Digital</button>
-                                <button class="btn-filtro" onclick="filtrarRecompensas('comida')">🍕 Comida</button>
-                                <button class="btn-filtro" onclick="filtrarRecompensas('experiencia')">🎬 Experiencias</button>
-                                <button class="btn-filtro" onclick="filtrarRecompensas('especial')">💝 Especiales</button>
-                                <button class="btn-filtro" onclick="filtrarRecompensas('fisica')">📦 Físicas</button>
+                            <div class="form-grupo">
+                                <label class="form-label">Aula</label>
+                                <input type="text" class="form-input" name="aula" placeholder="Aula 201">
                             </div>
-                        <div id="recompensas-lista" style="margin-top: 20px;">
-                            Cargando recompensas...
-                        </div>
-
-                      <!-- Historial de canjes -->
-                        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #fce4ec;">
-                            <h3 style="color: #880e4f; margin-bottom: 15px;">📜 Mis Canjes Recientes</h3>
-                            <button class="btn btn-secundario" onclick="cargarHistorialCanjes()">🔄 Ver Historial</button>
-                            <div id="historial-canjes" style="margin-top: 15px;">
-                                <!-- Aquí se cargará el historial -->
+                            <div class="form-grupo">
+                                <label class="form-label">Profesor</label>
+                                <input type="text" class="form-input" name="profesor" placeholder="Nombre del profesor">
                             </div>
+                            <div class="form-botones">
+                                <button type="button" class="btn btn-secundario" onclick="document.getElementById('formHorario').reset()">🔄 Limpiar</button>
+                                <button type="button" class="btn" onclick="crearHorario()">💾 Guardar Clase</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div id="horario-lista" style="margin-top: 20px;">Cargando horario...</div>
+                </div>
+
+                <!-- Sección de Recompensas -->
+                <div class="tarjeta tarjeta-ancha">
+                    <div class="tarjeta-header">
+                        <h2 class="tarjeta-titulo">🎁 Tienda de Recompensas</h2>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="background: #fce4ec; padding: 8px 15px; border-radius: 20px;">
+                                <strong>💎 <span id="puntos-actuales">0</span> puntos disponibles</strong>
+                            </div>
+                            <button class="btn" onclick="cargarRecompensas()">🔄 Actualizar</button>
                         </div>
                     </div>
+
+                    <!-- Filtros de categorías -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <button class="btn-filtro active" onclick="filtrarRecompensas('todas')">Todas</button>
+                        <button class="btn-filtro" onclick="filtrarRecompensas('digital')">📱 Digital</button>
+                        <button class="btn-filtro" onclick="filtrarRecompensas('comida')">🍕 Comida</button>
+                        <button class="btn-filtro" onclick="filtrarRecompensas('experiencia')">🎬 Experiencias</button>
+                        <button class="btn-filtro" onclick="filtrarRecompensas('especial')">💝 Especiales</button>
+                        <button class="btn-filtro" onclick="filtrarRecompensas('fisica')">📦 Físicas</button>
+                    </div>
+                    
+                    <div id="recompensas-lista" style="margin-top: 20px;">
+                        Cargando recompensas...
+                    </div>
+
+                    <!-- Historial de canjes -->
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #fce4ec;">
+                        <h3 style="color: #880e4f; margin-bottom: 15px;">📜 Mis Canjes Recientes</h3>
+                        <button class="btn btn-secundario" onclick="cargarHistorialCanjes()">🔄 Ver Historial</button>
+                        <div id="historial-canjes" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
 
                 <!-- Sección de Mensajes Especiales -->
                 <div class="tarjeta tarjeta-ancha">
@@ -121,397 +228,145 @@ app.get('/', (req, res) => {
             </div>
         </div>
 
-        <!-- Modal para Nueva Tarea -->
-        <div id="modalTarea" class="modal">
-          <div class="modal-contenido">
-            <button class="cerrar-modal" onclick="cerrarModal('modalTarea')">×</button>
-            <h2 style="color: #880e4f; margin-bottom: 20px; text-align: center;">📝 Nueva Tarea</h2>
-            
-            <form id="formTarea" onsubmit="crearTarea(event)">
-              <div class="form-grupo">
-                <label class="form-label">Título de la tarea *</label>
-                <input type="text" class="form-input" name="titulo" required placeholder="Ej: Estudiar para el parcial de matemáticas">
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Descripción</label>
-                <textarea class="form-textarea" name="descripcion" placeholder="Detalles de la tarea..."></textarea>
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Tipo de tarea</label>
-                <select class="form-select" name="tipo">
-                  <option value="tarea">📝 Tarea normal</option>
-                  <option value="quiz">📋 Quiz</option>
-                  <option value="parcial">📊 Parcial</option>
-                  <option value="trabajo">📄 Trabajo</option>
-                  <option value="proyecto">📚 Proyecto</option>
-                </select>
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Materia</label>
-                <select class="form-select" name="materi.id" id="selectMaterias">
-                  <option value="">Seleccionar materia...</option>
-                </select>
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Fecha de entrega</label>
-                <input type="date" class="form-input" name="fecha_entrega">
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Prioridad</label>
-                <select class="form-select" name="prioridad">
-                  <option value="1">⭐ Baja</option>
-                  <option value="2">⭐⭐ Media-Baja</option>
-                  <option value="3" selected>⭐⭐⭐ Media</option>
-                  <option value="4">⭐⭐⭐⭐ Alta</option>
-                  <option value="5">⭐⭐⭐⭐⭐ Urgente</option>
-                </select>
-              </div>
-              
-              <div class="form-botones">
-                <button type="button" class="btn btn-secundario" onclick="cerrarModal('modalTarea')">Cancelar</button>
-                <button type="submit" class="btn">💾 Guardar Tarea</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Modal para Nueva Materia -->
-        <div id="modalMateria" class="modal">
-          <div class="modal-contenido">
-            <button class="cerrar-modal" onclick="cerrarModal('modalMateria')">×</button>
-            <h2 style="color: #880e4f; margin-bottom: 20px; text-align: center;">📚 Nueva Materia</h2>
-            
-            <form id="formMateria" onsubmit="crearMateria(event)">
-              <div class="form-grupo">
-                <label class="form-label">Nombre de la materia *</label>
-                <input type="text" class="form-input" name="nombre" required placeholder="Ej: Cálculo Diferencial">
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Código</label>
-                <input type="text" class="form-input" name="codigo" placeholder="Ej: MAT-101">
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Créditos</label>
-                <input type="number" class="form-input" name="creditos" min="1" max="10" placeholder="3">
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Color</label>
-                <select class="form-select" name="color">
-                  <option value="#EC4899">💗 Rosa</option>
-                  <option value="#8B5CF6">💜 Morado</option>
-                  <option value="#10B981">💚 Verde</option>
-                  <option value="#F59E0B">🧡 Naranja</option>
-                  <option value="#3B82F6">💙 Azul</option>
-                  <option value="#EF4444">❤️ Rojo</option>
-                </select>
-              </div>
-              
-              <div class="form-botones">
-                <button type="button" class="btn btn-secundario" onclick="cerrarModal('modalMateria')">Cancelar</button>
-                <button type="submit" class="btn">💾 Guardar Materia</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <!-- Modal para Nueva Clase en Horario -->
-        <div id="modalHorario" class="modal">
-          <div class="modal-contenido">
-            <button class="cerrar-modal" onclick="cerrarModal('modalHorario')">×</button>
-            <h2 style="color: #880e4f; margin-bottom: 20px; text-align: center;">🕐 Nueva Clase</h2>
-            
-            <form id="formHorario" onsubmit="crearHorario(event)">
-              <div class="form-grupo">
-                <label class="form-label">Materia *</label>
-                <select class="form-select" name="materi.id" id="selectMateriasHorario" required>
-                  <option value="">Seleccionar materia...</option>
-                </select>
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Día de la semana *</label>
-                <select class="form-select" name="dia" required>
-                  <option value="Lunes">Lunes</option>
-                  <option value="Martes">Martes</option>
-                  <option value="Miércoles">Miércoles</option>
-                  <option value="Jueves">Jueves</option>
-                  <option value="Viernes">Viernes</option>
-                  <option value="Sábado">Sábado</option>
-                  <option value="Domingo">Domingo</option>
-                </select>
-              </div>
-              
-              <div class="form-grupo" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                  <label class="form-label">Hora inicio *</label>
-                  <input type="time" class="form-input" name="hora_inicio" required>
-                </div>
-                <div>
-                  <label class="form-label">Hora fin *</label>
-                  <input type="time" class="form-input" name="hora_fin" required>
-                </div>
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Aula</label>
-                <input type="text" class="form-input" name="aula" placeholder="Ej: Aula 201">
-              </div>
-              
-              <div class="form-grupo">
-                <label class="form-label">Profesor</label>
-                <input type="text" class="form-input" name="profesor" placeholder="Nombre del profesor">
-              </div>
-              
-              <div class="form-botones">
-                <button type="button" class="btn btn-secundario" onclick="cerrarModal('modalHorario')">Cancelar</button>
-                <button type="submit" class="btn">💾 Guardar Clase</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
         <script>
-        // ========== NUEVAS FUNCIONES PARA FORMULARIOS ==========
+        // ========== FUNCIONES PRINCIPALES ==========
         
-        // Funciones para los modales
-        function mostrarModal(idModal) {
-          document.getElementById(idModal).style.display = 'block';
-          // Cargar materias en los selects
-          if (idModal === 'modalTarea' || idModal === 'modalHorario') {
-            cargarMateriasParaSelect();
-          }
-        }
-
-        function cerrarModal(idModal) {
-          document.getElementById(idModal).style.display = 'none';
-        }
-
-        // Cerrar modal al hacer clic fuera del contenido
-        window.onclick = function(event) {
-          if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-          }
-        }
-
-        // Cargar materias para los selects - VERSIÓN CORRECTA PARA MONGODB
-        async function cargarMateriasParaSelect() {
-          try {
-            console.log('Cargando materias para select...');
-            const response = await fetch('/api/materias');
-            const data = await response.json();
-            console.log('Materias cargadas:', data);
-
-            if (data.success) {
-              const selectTarea = document.getElementById('selectMaterias');
-              const selectHorario = document.getElementById('selectMateriasHorario');
-
-              // Limpiar selects
-              selectTarea.innerHTML = '<option value="">Seleccionar materia...</option>';
-              selectHorario.innerHTML = '<option value="">Seleccionar materia...</option>';
-
-              // Agregar materias - CORREGIDO PARA MONGODB .id)
-              data.materias.forEach(function(materia) {
-                const optionHTML = '<option value="' + materia.id + '">' + materia.nombre + '</option>';
-                selectTarea.innerHTML += optionHTML;
-                selectHorario.innerHTML += optionHTML;
-              });
-            }
-          } catch (error) {
-            console.error('Error cargando materias:', error);
-          }
-        }
-
         // Crear nueva tarea
-        async function crearTarea(event) {
-          event.preventDefault();
-          const formData = new FormData(event.target);
-          const tareaData = {
-            titulo: formData.get('titulo'),
-            descripcion: formData.get('descripcion'),
-            tipo: formData.get('tipo'),
-            materi.id: formData.get('materi.id') || null,
-            fecha_entrega: formData.get('fecha_entrega'),
-            prioridad: parseInt(formData.get('prioridad'))
-          };
-          
-          try {
-            const response = await fetch('/api/tareas', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(tareaData)
-            });
+        async function crearTarea() {
+            const form = document.getElementById('formTarea');
+            const formData = new FormData(form);
             
-            const data = await response.json();
+            const tareaData = {
+                titulo: formData.get('titulo'),
+                descripcion: formData.get('descripcion'),
+                tipo: formData.get('tipo'),
+                prioridad: parseInt(formData.get('prioridad'))
+            };
             
-            if (data.success) {
-              alert('✅ Tarea creada exitosamente! Ganaste ' + data.puntos_ganados + ' puntos potenciales!');
-              cerrarModal('modalTarea');
-              event.target.reset();
-              cargarTareas();
-              cargarProgreso();
-            } else {
-              alert('❌ Error: ' + data.error);
+            try {
+                const response = await fetch('/api/tareas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(tareaData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Tarea creada exitosamente! Ganaste ' + data.puntos_ganados + ' puntos potenciales!');
+                    form.reset();
+                    cargarTareas();
+                    cargarProgreso();
+                    cargarRecompensas();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al crear la tarea');
             }
-          } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error al crear la tarea');
-          }
-        }
-
-        // Crear nueva materia
-        async function crearMateria(event) {
-          event.preventDefault();
-          const formData = new FormData(event.target);
-          const materiaData = {
-            nombre: formData.get('nombre'),
-            codigo: formData.get('codigo'),
-            creditos: formData.get('creditos') ? parseInt(formData.get('creditos')) : null,
-            color: formData.get('color')
-          };
-          
-          try {
-            const response = await fetch('/api/materias', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(materiaData)
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-              alert('✅ Materia creada exitosamente!');
-              cerrarModal('modalMateria');
-              event.target.reset();
-              cargarMateriasParaSelect();
-            } else {
-              alert('❌ Error: ' + data.error);
-            }
-          } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error al crear la materia');
-          }
         }
 
         // Crear nuevo horario
-        async function crearHorario(event) {
-          event.preventDefault();
-          const formData = new FormData(event.target);
-          const horarioData = {
-            materi.id: formData.get('materi.id'),
-            dia: formData.get('dia'),
-            hora_inicio: formData.get('hora_inicio'),
-            hora_fin: formData.get('hora_fin'),
-            aula: formData.get('aula'),
-            profesor: formData.get('profesor')
-          };
-          
-          try {
-            const response = await fetch('/api/horarios', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(horarioData)
-            });
+        async function crearHorario() {
+            const form = document.getElementById('formHorario');
+            const formData = new FormData(form);
             
-            const data = await response.json();
+            const horarioData = {
+                materia_nombre: formData.get('materia_nombre'),
+                dia: formData.get('dia'),
+                hora_inicio: formData.get('hora_inicio'),
+                hora_fin: formData.get('hora_fin'),
+                aula: formData.get('aula'),
+                profesor: formData.get('profesor')
+            };
             
-            if (data.success) {
-              alert('✅ Clase agregada al horario!');
-              cerrarModal('modalHorario');
-              event.target.reset();
-              cargarHorario();
-            } else {
-              alert('❌ Error: ' + data.error);
+            try {
+                const response = await fetch('/api/horarios', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(horarioData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Clase agregada al horario!');
+                    form.reset();
+                    cargarHorario();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al crear el horario');
             }
-          } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error al crear el horario');
-          }
         }
 
         // ========== FUNCIONES PARA ELIMINAR ==========
         
-        // Función para eliminar tareas - CORREGIDA PARA MONGODB
         async function eliminarTarea(id) {
-          if (confirm('¿Estás segura de que quieres eliminar esta tarea?')) {
-            try {
-              const response = await fetch(\`/api/tareas/\${id}\`, { 
-                method: 'DELETE' 
-              });
-              const data = await response.json();
-              
-              if (data.success) {
-                alert('✅ Tarea eliminada correctamente');
-                cargarTareas(); // Recargar la lista
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              alert('❌ Error al eliminar la tarea');
+            if (confirm('¿Estás segura de que quieres eliminar esta tarea?')) {
+                try {
+                    const response = await fetch('/api/tareas/' + id, { 
+                        method: 'DELETE' 
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('✅ Tarea eliminada correctamente');
+                        cargarTareas();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('❌ Error al eliminar la tarea');
+                }
             }
-          }
         }
 
-        // Función para eliminar horarios - CORREGIDA PARA MONGODB
         async function eliminarHorario(id) {
-          if (confirm('¿Estás segura de que quieres eliminar esta clase del horario?')) {
-            try {
-              const response = await fetch(\`/api/horarios/\${id}\`, { 
-                method: 'DELETE' 
-              });
-              const data = await response.json();
-              
-              if (data.success) {
-                alert('✅ Clase eliminada del horario');
-                cargarHorario(); // Recargar el horario
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              alert('❌ Error al eliminar la clase');
+            if (confirm('¿Estás segura de que quieres eliminar esta clase del horario?')) {
+                try {
+                    const response = await fetch('/api/horarios/' + id, { 
+                        method: 'DELETE' 
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('✅ Clase eliminada del horario');
+                        cargarHorario();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('❌ Error al eliminar la clase');
+                }
             }
-          }
         }
 
-        // ========== SISTEMA DE RECOMPENSAS MEJORADO ==========
+        // ========== SISTEMA DE RECOMPENSAS ==========
 
         let recompensasGlobales = [];
         let puntosActuales = 0;
 
-        // Cargar recompensas y puntos
         async function cargarRecompensas() {
             try {
-                console.log('Cargando recompensas...');
                 const response = await fetch('/api/recompensas');
                 const data = await response.json();
-                console.log('Recompensas cargadas:', data);
 
                 if (data.success) {
                     recompensasGlobales = data.recompensas;
-                    // Actualizar puntos
                     await actualizarPuntos();
-                    // Mostrar todas las recompensas
                     mostrarRecompensas(recompensasGlobales);
                 }
             } catch (error) {
                 console.error('Error cargando recompensas:', error);
-                document.getElementById('recompensas-lista').innerHTML = 
-                    '<div style="color: red; text-align: center; padding: 20px;">Error cargando recompensas</div>';
             }
         }
 
-        // Actualizar puntos disponibles
         async function actualizarPuntos() {
             try {
                 const response = await fetch('/api/progreso');
@@ -526,7 +381,6 @@ app.get('/', (req, res) => {
             }
         }
 
-        // Mostrar recompensas en la UI
         function mostrarRecompensas(recompensas) {
             if (recompensas.length === 0) {
                 document.getElementById('recompensas-lista').innerHTML = 
@@ -540,7 +394,6 @@ app.get('/', (req, res) => {
 
             const recompensasHTML = recompensas.map(recompensa => {
                 const puedeCanjear = puntosActuales >= recompensa.puntos_requeridos;
-                const claseBoton = recompensa.canjeable_multiple ? 'btn-canjear canjeable-multiple' : 'btn-canjear';
                 
                 return '<div class="tarjeta-recompensa" data-categoria="' + recompensa.categoria + '">' +
                             '<div class="info-recompensa">' +
@@ -555,8 +408,8 @@ app.get('/', (req, res) => {
                                     (recompensa.canjeable_multiple ? '<span style="color: #8b5cf6; font-size: 0.8em;">🔄 Múltiple</span>' : '') +
                                 '</div>' +
                             '</div>' +
-                            '<button class="' + claseBoton + '" ' +
-                                    'onclick="canjearRecompensa(\\'' + recompensa.id + '\\', ' + recompensa.puntos_requeridos + ')"' +
+                            '<button class="btn-canjear" ' +
+                                    'onclick="canjearRecompensa(\\'' + recompensa._id + '\\', ' + recompensa.puntos_requeridos + ')"' +
                                     (!puedeCanjear ? ' disabled' : '') + '>' +
                                 (puedeCanjear ? '🎁 Canjear' : '🔒 Insuficiente') +
                             '</button>' +
@@ -566,9 +419,7 @@ app.get('/', (req, res) => {
             document.getElementById('recompensas-lista').innerHTML = recompensasHTML;
         }
 
-        // Filtrar recompensas por categoría
         function filtrarRecompensas(categoria) {
-            // Actualizar botones activos
             document.querySelectorAll('.btn-filtro').forEach(btn => {
                 btn.classList.remove('active');
             });
@@ -581,7 +432,6 @@ app.get('/', (req, res) => {
             mostrarRecompensas(recompensasFiltradas);
         }
 
-        // Canjear una recompensa
         async function canjearRecompensa(recompensaId, puntosRequeridos) {
             if (!confirm('¿Estás segura de que quieres canjear esta recompensa por ' + puntosRequeridos + ' puntos?')) {
                 return;
@@ -599,8 +449,6 @@ app.get('/', (req, res) => {
 
                 if (data.success) {
                     alert('🎉 ¡Recompensa canjeada! Has gastado ' + puntosRequeridos + ' puntos\\n💎 Puntos restantes: ' + data.puntos_restantes);
-                    
-                    // Recargar todo
                     cargarRecompensas();
                     cargarProgreso();
                     cargarHistorialCanjes();
@@ -613,7 +461,6 @@ app.get('/', (req, res) => {
             }
         }
 
-        // Cargar historial de canjes
         async function cargarHistorialCanjes() {
             try {
                 const response = await fetch('/api/recompensas/historial');
@@ -627,7 +474,6 @@ app.get('/', (req, res) => {
             }
         }
 
-        // Mostrar historial de canjes
         function mostrarHistorialCanjes(historial) {
             if (historial.length === 0) {
                 document.getElementById('historial-canjes').innerHTML = 
@@ -654,7 +500,6 @@ app.get('/', (req, res) => {
             document.getElementById('historial-canjes').innerHTML = historialHTML;
         }
 
-        // Helper para nombres de categorías
         function obtenerNombreCategoria(categoria) {
             const categorias = {
                 'digital': 'Digital',
@@ -666,15 +511,12 @@ app.get('/', (req, res) => {
             return categorias[categoria] || categoria;
         }
 
-        // ========== FIN SISTEMA DE RECOMPENSAS ==========
+        // ========== FUNCIONES BÁSICAS ==========
         
-        // Funciones globales simples para los botones
         async function cargarTareas() {
             try {
-                console.log('Cargando tareas...');
                 const response = await fetch('/api/tareas');
                 const data = await response.json();
-                console.log('Tareas cargadas:', data);
                 mostrarTareas(data.tareas);
             } catch (error) {
                 console.error('Error:', error);
@@ -683,10 +525,8 @@ app.get('/', (req, res) => {
 
         async function cargarHorario() {
             try {
-                console.log('Cargando horario...');
                 const response = await fetch('/api/horarios');
                 const data = await response.json();
-                console.log('Horario cargado:', data);
                 mostrarHorario(data.horarios);
             } catch (error) {
                 console.error('Error:', error);
@@ -697,22 +537,20 @@ app.get('/', (req, res) => {
             try {
                 const response = await fetch('/api/mensaje-especial');
                 const data = await response.json();
-                document.getElementById('mensaje-especial').innerHTML = \`
-                    <strong>💕 \${data.mensaje}</strong>
-                    <br><small>🕒 \${data.timestamp}</small>
-                \`;
+                document.getElementById('mensaje-especial').innerHTML = 
+                    '<strong>💕 ' + data.mensaje + '</strong>' +
+                    '<br><small>🕒 ' + data.timestamp + '</small>';
             } catch (error) {
                 console.error('Error:', error);
             }
         }
 
-        // FUNCIÓN COMPLETAR TAREA - CORREGIDA PARA MONGODB
         async function completarTarea(id) {
             try {
-                const response = await fetch(\`/api/tareas/\${id}/completar\`, { method: 'POST' });
+                const response = await fetch('/api/tareas/' + id + '/completar', { method: 'POST' });
                 const data = await response.json();
                 if (data.success) {
-                    alert(data.message + '\\\\n' + data.mensaje_especial);
+                    alert(data.message + '\\n' + data.mensaje_especial);
                     cargarTareas();
                     cargarProgreso();
                     cargarRecompensas();
@@ -727,10 +565,8 @@ app.get('/', (req, res) => {
 
         async function cargarProgreso() {
             try {
-                console.log('Cargando progreso...');
                 const response = await fetch('/api/progreso');
                 const data = await response.json();
-                console.log('Progreso cargado:', data);
                 mostrarProgreso(data.progreso);
             } catch (error) {
                 console.error('Error:', error);
@@ -738,123 +574,99 @@ app.get('/', (req, res) => {
         }
 
         function mostrarProgreso(progreso) {
-            document.getElementById('progreso-info').innerHTML = \`
-                <div style="text-align: center;">
-                    <h3 style="color: #880e4f; margin-bottom: 15px;">⭐ Mi Progreso 🌟</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div style="background: #fce4ec; padding: 15px; border-radius: 15px;">
-                            <div style="font-size: 2em; color: #ec4899;">\${progreso.puntos_totales}</div>
-                            <div style="color: #880e4f;">🎯 Puntos</div>
-                        </div>
-                        <div style="background: #fce4ec; padding: 15px; border-radius: 15px;">
-                            <div style="font-size: 2em; color: #ec4899;">\${progreso.tareas_completadas}</div>
-                            <div style="color: #880e4f;">✅ Tareas</div>
-                        </div>
-                    </div>
-                </div>
-            \`;
+            document.getElementById('progreso-info').innerHTML = 
+                '<div style="text-align: center;">' +
+                    '<h3 style="color: #880e4f; margin-bottom: 15px;">⭐ Mi Progreso 🌟</h3>' +
+                    '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">' +
+                        '<div style="background: #fce4ec; padding: 15px; border-radius: 15px;">' +
+                            '<div style="font-size: 2em; color: #ec4899;">' + progreso.puntos_totales + '</div>' +
+                            '<div style="color: #880e4f;">🎯 Puntos</div>' +
+                        '</div>' +
+                        '<div style="background: #fce4ec; padding: 15px; border-radius: 15px;">' +
+                            '<div style="font-size: 2em; color: #ec4899;">' + progreso.tareas_completadas + '</div>' +
+                            '<div style="color: #880e4f;">✅ Tareas</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
         }
 
-        // FUNCIÓN MOSTRAR TAREAS - COMPLETAMENTE CORREGIDA PARA MONGODB
         function mostrarTareas(tareas) {
-          if (!tareas || tareas.length === 0) {
-            document.getElementById('tareas-lista').innerHTML = \`
-              <div style="text-align: center; padding: 30px; color: #880e4f;">
-                <div style="font-size: 3em; margin-bottom: 10px;">🎀</div>
-                <h3>¡No hay tareas pendientes!</h3>
-                <p>¡Eres una estudiante ejemplar! 💖</p>
-              </div>
-            \`;
-            return;
-          }
+            if (!tareas || tareas.length === 0) {
+                document.getElementById('tareas-lista').innerHTML = 
+                    '<div style="text-align: center; padding: 30px; color: #880e4f;">' +
+                        '<div style="font-size: 3em; margin-bottom: 10px;">🎀</div>' +
+                        '<h3>¡No hay tareas pendientes!</h3>' +
+                        '<p>¡Eres una estudiante ejemplar! 💖</p>' +
+                    '</div>';
+                return;
+            }
 
-          const tareasHTML = tareas.map(tarea => {
-            const tareaId = tarea.id;
-            const fechaEntrega = tarea.fecha_entrega ? new Date(tarea.fecha_entrega).toLocaleDateString() : '';
+            const tareasHTML = tareas.map(tarea => {
+                const fechaEntrega = tarea.fecha_entrega ? new Date(tarea.fecha_entrega).toLocaleDateString() : '';
+                
+                return '<div class="item-tarea ' + (tarea.completada ? 'tarea-completada' : '') + '">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">' +
+                        '<div style="flex: 1;">' +
+                            '<div style="display: flex; align-items: center; margin-bottom: 8px;">' +
+                                '<span class="color-materia" style="background-color: ' + (tarea.materia_color || '#EC4899') + ';"></span>' +
+                                '<strong style="color: #880e4f;">' + (tarea.materia_nombre || 'General') + '</strong>' +
+                                '<span style="margin-left: auto; background: #ff9eb5; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">' +
+                                    obtenerEmojiTipo(tarea.tipo) + ' ' + tarea.tipo +
+                                '</span>' +
+                            '</div>' +
+                            '<div style="color: #880e4f; font-size: 1.1em; margin-bottom: 5px;">' + tarea.titulo + '</div>' +
+                            (tarea.descripcion ? '<div style="color: #666; margin-bottom: 8px; font-size: 0.9em;">' + tarea.descripcion + '</div>' : '') +
+                            '<div style="display: flex; gap: 15px; font-size: 0.85em; color: #888;">' +
+                                (fechaEntrega ? '<span>📅 ' + fechaEntrega + '</span>' : '') +
+                                '<span>⭐ Prioridad: ' + '★'.repeat(tarea.prioridad) + '☆'.repeat(5-tarea.prioridad) + '</span>' +
+                                '<span>🎯 ' + (tarea.puntos || 10) + ' puntos</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div style="display: flex; gap: 8px; flex-direction: column; min-width: 120px;">' +
+                            (!tarea.completada ? 
+                                '<button class="btn btn-pequeno" onclick="completarTarea(\\'' + tarea._id + '\\')" style="background: #10b981;">✅ Completar</button>' :
+                                '<span style="color: #10b981; font-weight: bold; text-align: center;">✅ Completada</span>'
+                            ) +
+                            '<button class="btn btn-pequeno" onclick="eliminarTarea(\\'' + tarea._id + '\\')" style="background: #ef4444;">🗑️ Eliminar</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
             
-            return \`
-            <div class="item-tarea \${tarea.completada ? 'tarea-completada' : ''}">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
-                <div style="flex: 1;">
-                  <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                    <span class="color-materia" style="background-color: \${tarea.materia_color || '#EC4899'};"></span>
-                    <strong style="color: #880e4f;">\${tarea.materia_nombre || 'General'}</strong>
-                    <span style="margin-left: auto; background: #ff9eb5; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em;">
-                      \${obtenerEmojiTipo(tarea.tipo)} \${tarea.tipo}
-                    </span>
-                  </div>
-                  <div style="color: #880e4f; font-size: 1.1em; margin-bottom: 5px;">\${tarea.titulo}</div>
-                  \${tarea.descripcion ? \`<div style="color: #666; margin-bottom: 8px; font-size: 0.9em;">\${tarea.descripcion}</div>\` : ''}
-                  <div style="display: flex; gap: 15px; font-size: 0.85em; color: #888;">
-                    \${fechaEntrega ? \`<span>📅 \${fechaEntrega}</span>\` : ''}
-                    <span>⭐ Prioridad: \${'★'.repeat(tarea.prioridad)}\${'☆'.repeat(5-tarea.prioridad)}</span>
-                    <span>🎯 \${tarea.puntos || 10} puntos</span>
-                  </div>
-                </div>
-                <div style="display: flex; gap: 8px; flex-direction: column; min-width: 120px;">
-                  \${!tarea.completada ? \`
-                    <button class="btn btn-pequeno" onclick="completarTarea('\${tareaId}')" 
-                            style="background: #10b981;">
-                      ✅ Completar
-                    </button>
-                  \` : \`
-                    <span style="color: #10b981; font-weight: bold; text-align: center;">
-                      ✅ Completada
-                    </span>
-                  \`}
-                  <button class="btn btn-pequeno" onclick="eliminarTarea('\${tareaId}')" 
-                          style="background: #ef4444;">
-                    🗑️ Eliminar
-                  </button>
-                </div>
-              </div>
-            </div>
-            \`;
-          }).join('');
-          
-          document.getElementById('tareas-lista').innerHTML = tareasHTML;
+            document.getElementById('tareas-lista').innerHTML = tareasHTML;
         }
 
-        // FUNCIÓN MOSTRAR HORARIO - CORREGIDA PARA MONGODB
         function mostrarHorario(horarios) {
-          if (!horarios || horarios.length === 0) {
-            document.getElementById('horario-lista').innerHTML = \`
-              <div style="text-align: center; padding: 20px; color: #880e4f;">
-                <div style="font-size: 2em; margin-bottom: 10px;">🕐</div>
-                <p>No hay clases en el horario aún</p>
-              </div>
-            \`;
-            return;
-          }
+            if (!horarios || horarios.length === 0) {
+                document.getElementById('horario-lista').innerHTML = 
+                    '<div style="text-align: center; padding: 20px; color: #880e4f;">' +
+                        '<div style="font-size: 2em; margin-bottom: 10px;">🕐</div>' +
+                        '<p>No hay clases en el horario aún</p>' +
+                    '</div>';
+                return;
+            }
 
-          const horarioHTML = horarios.map(horario => {
-            const horarioId = horario.id;
+            const horarioHTML = horarios.map(horario => {
+                return '<div class="item-tarea">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">' +
+                        '<div style="flex: 1;">' +
+                            '<div style="display: flex; align-items: center; margin-bottom: 5px;">' +
+                                '<span class="color-materia" style="background-color: ' + (horario.materia_color || '#EC4899') + ';"></span>' +
+                                '<strong style="color: #880e4f; flex: 1;">' + horario.materia_nombre + '</strong>' +
+                                '<span style="background: #ff9eb5; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.9em;">' +
+                                    '🕐 ' + horario.hora_inicio + ' - ' + horario.hora_fin +
+                                '</span>' +
+                            '</div>' +
+                            '<div style="color: #666; font-size: 0.9em;">' + horario.dia + '</div>' +
+                            (horario.aula ? '<div style="color: #666; font-size: 0.9em;">🏫 ' + horario.aula + '</div>' : '') +
+                            (horario.profesor ? '<div style="color: #666; font-size: 0.9em;">👨‍🏫 ' + horario.profesor + '</div>' : '') +
+                        '</div>' +
+                        '<button class="btn btn-pequeno" onclick="eliminarHorario(\\'' + horario._id + '\\')" style="background: #ef4444; min-width: 60px;">🗑️ Eliminar</button>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
             
-            return \`
-            <div class="item-tarea">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
-                <div style="flex: 1;">
-                  <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                    <span class="color-materia" style="background-color: \${horario.materia_color || '#EC4899'};"></span>
-                    <strong style="color: #880e4f; flex: 1;">\${horario.materia_nombre}</strong>
-                    <span style="background: #ff9eb5; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.9em;">
-                      🕐 \${horario.hora_inicio} - \${horario.hora_fin}
-                    </span>
-                  </div>
-                  <div style="color: #666; font-size: 0.9em;">\${horario.dia}</div>
-                  \${horario.aula ? \`<div style="color: #666; font-size: 0.9em;">🏫 \${horario.aula}</div>\` : ''}
-                  \${horario.profesor ? \`<div style="color: #666; font-size: 0.9em;">👨‍🏫 \${horario.profesor}</div>\` : ''}
-                </div>
-                <button class="btn btn-pequeno" onclick="eliminarHorario('\${horarioId}')" 
-                        style="background: #ef4444; min-width: 60px;">
-                  🗑️ Eliminar
-                </button>
-              </div>
-            </div>
-            \`;
-          }).join('');
-          
-          document.getElementById('horario-lista').innerHTML = horarioHTML;
+            document.getElementById('horario-lista').innerHTML = horarioHTML;
         }
 
         function obtenerEmojiTipo(tipo) {
@@ -870,7 +682,6 @@ app.get('/', (req, res) => {
 
         // Cargar todo al iniciar
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM cargado, inicializando aplicación...');
             cargarProgreso();
             cargarTareas();
             cargarHorario();
@@ -900,7 +711,6 @@ app.get('/api/mensaje-especial', (req, res) => {
   
   res.json({
     mensaje: mensajeAleatorio,
-    emoji: "💖🎀📚🌟",
     timestamp: new Date().toLocaleTimeString()
   });
 });
@@ -912,11 +722,10 @@ app.get('/api/progreso', async (req, res) => {
     const tareas = await db.collection('tareas').find({}).toArray();
     
     const tareasCompletadas = tareas.filter(t => t.completada).length;
-    const puntosTotales = tareasCompletadas * 10; // 10 puntos por tarea
+    const puntosTotales = tareasCompletadas * 10;
     
-    // Obtener puntos gastados de recompensas
     const recompensasCanjeadas = await db.collection('recompensas_canjeadas').find({}).toArray();
-    const puntosGastados = recompensasCanjeadas.reduce((total, r) => total + r.puntos, 0);
+    const puntosGastados = recompensasCanjeadas.reduce((total, r) => total + (r.puntos_gastados || 0), 0);
     
     res.json({
       success: true,
