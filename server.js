@@ -894,15 +894,15 @@ app.get('/', (req, res) => {
             return emojis[tipo] || '📌';
         }
 
-        // Cargar todo al iniciar
-        document.addEventListener('DOMContentLoaded', function() {
-            cargarProgreso();
-            cargarTareas();
-            cargarHorario();
-            cargarRecompensas();
-        });
+        // Cargar datos iniciales
+        cargarTareas();
+        cargarHorario();
+        obtenerMensajeEspecial();
+        cargarProgreso();
+        cargarRecompensas();
+        cargarHistorialCanjes();
         </script>
-    </body>
+      </body>
     </html>
   `);
 });
