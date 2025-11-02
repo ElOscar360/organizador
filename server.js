@@ -933,6 +933,24 @@ app.get('/api/progreso', async (req, res) => {
   }
 });
 
+// API de recompensas
+app.get('/api/recompensas', async (req, res) => {
+    try {
+        const db = getDB();
+        const recompensas = await db.collection('recompensas').find({ activa: true }).toArray();
+        
+        console.log('🎁 Enviando recompensas al frontend:', recompensas.length);
+        
+        res.json({
+            success: true,
+            recompensas: recompensas
+        });
+    } catch (error) {
+        console.error('❌ Error en /api/recompensas:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Iniciar el servidor
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🎀 Servidor corriendo en: http://localhost:${PORT}`);
