@@ -125,9 +125,7 @@ async function inicializarDatos() {
                 color: '#F59E0B'
             }
         ]);
-
-        console.log('🎉 Recompensas actualizadas correctamente (sin desbloqueada)');
-
+        console.log('✅ Recompensas nuevas insertadas exitosamente');
     } catch (error) {
         console.error('❌ Error actualizando recompensas:', error);
     }
