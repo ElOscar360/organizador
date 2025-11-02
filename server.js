@@ -6,7 +6,7 @@ const path = require('path');
 const { connectDB } = require('./database/db');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 // Conectar a MongoDB
 connectDB();
@@ -626,8 +626,29 @@ app.get('/api/mensaje-especial', (req, res) => {
     emoji: "💖🎀📚🌟",
     timestamp: new Date().toLocaleTimeString()
   });
+  
 });
-
+app.get('/api/debug-db', async (req, res) => {
+    try {
+        const Recompensa = require('./database/models/Recompensa');
+        const Progreso = require('./database/models/Progreso');
+        
+        const recompensasCount = await Recompensa.countDocuments();
+        const progreso = await Progreso.findOne();
+        
+        res.json({
+            conexion: '✅ Conectado a MongoDB',
+            recompensas_en_bd: recompensasCount,
+            progreso: progreso,
+            mongodb_uri: process.env.MONGODB_URI ? '✅ Configurada' : '❌ No configurada'
+        });
+    } catch (error) {
+        res.json({ 
+            conexion: '❌ Error de conexión',
+            error: error.message
+        });
+    }
+});
 // Iniciar el servidor
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🎀 Servidor corriendo en: http://localhost:${PORT}`);

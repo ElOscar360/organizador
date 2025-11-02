@@ -1,38 +1,32 @@
-// database/db.js - VERSIÓN MONGODB
+// database/db.js - VERSIÓN CON LOGS
 require('dotenv').config();
 
 const mongoose = require('mongoose');
 
-console.log('🔍 MONGODB_URI:', process.env.MONGODB_URI ? '✅ Definida' : '❌ No definida');
+console.log('🔍 Verificando MONGODB_URI...');
+console.log('URI definida:', process.env.MONGODB_URI ? '✅ SÍ' : '❌ NO');
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-    console.error('❌ ERROR: MONGODB_URI no está definida en las variables de entorno');
-    process.exit(1);
-}
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/organizador-universitario';
 
 const connectDB = async () => {
     try {
-        console.log('🔗 Intentando conectar a MongoDB Atlas...');
+        console.log('🔗 Intentando conectar a MongoDB...');
+        console.log('URI:', MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@'));
         
-        // Agrega opciones de conexión para evitar problemas DNS
-        const options = {
-            serverSelectionTimeoutMS: 10000,
-            socketTimeoutMS: 45000,
-            family: 4 // Fuerza IPv4
-        };
-
-        await mongoose.connect(MONGODB_URI, options);
+        await mongoose.connect(MONGODB_URI);
         console.log('✅ Conectado a MongoDB Atlas');
+        
+        // Verificar conexión
+        const db = mongoose.connection;
+        console.log('📊 Estado de la conexión:', db.readyState === 1 ? '✅ Conectado' : '❌ Desconectado');
+        
         await inicializarDatos();
     } catch (error) {
         console.error('❌ Error conectando a MongoDB:', error.message);
-        console.log('💡 Intenta conectar a otra red (hotspot del celular)');
+        console.error('🔍 Detalles del error:', error);
         process.exit(1);
     }
 };
-
 
 
 async function inicializarDatos() {
@@ -130,5 +124,6 @@ async function inicializarDatos() {
         console.error('❌ Error actualizando recompensas:', error);
     }
 }
+
 
 module.exports = { connectDB, mongoose };
